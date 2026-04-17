@@ -16,7 +16,7 @@ import javax.swing.*;
 public class signupPage extends JFrame implements ActionListener{
     
     private JLabel lblHeader, lblUsername, lblPassword;
-    private JButton btnLogin, btnReset, btnSignup;
+    private JButton btnCreate, btnReset, btnSignin;
     private JTextField txtUsername, txtPassword;
     
     private String username = "admin";
@@ -63,33 +63,33 @@ public class signupPage extends JFrame implements ActionListener{
         txtPassword.setBounds(350, 260, 200, 40);
         add(txtPassword);
         
-        btnLogin = new JButton("LogIn");        
-        btnLogin.setBounds(230, 330, 80, 40);
-        add(btnLogin);
+        btnCreate = new JButton("SignIn");        
+        btnCreate.setBounds(230, 330, 80, 40);
+        add(btnCreate);
         
         btnReset = new JButton("Reset");        
         btnReset.setBounds(400, 330, 80, 40);
         add(btnReset);
         
-        btnSignup = new JButton("Already have an account?");        
-        btnSignup.setBounds(200, 400, 310, 40);
-        add(btnSignup);
+        btnSignin = new JButton("Already have an account?");        
+        btnSignin.setBounds(200, 400, 310, 40);
+        add(btnSignin);
         
-        btnLogin.addActionListener(this);
+        btnCreate.addActionListener(this);
         btnReset.addActionListener(this);
-        btnSignup.addActionListener(this);
+        btnSignin.addActionListener(this);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == btnLogin) {
+        if (e.getSource() == btnCreate) {
             dispose();
             loginPage lp = new loginPage();
             lp.setVisible(true);
         } else if (e.getSource() == btnReset) {
             txtUsername.setText("");
             txtPassword.setText("");
-        } else if (e.getSource() == btnSignup) {
+        } else if (e.getSource() == btnSignin) {
             dispose();
             loginPage lp = new loginPage();
             lp.setVisible(true);

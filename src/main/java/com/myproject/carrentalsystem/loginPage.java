@@ -21,58 +21,43 @@ public class loginPage extends JFrame implements ActionListener{
     
     private String username = "admin";
     private String password = "admin123";
-    protected static final ArrayList<String> screenSizes = new ArrayList<>(){{
-        add("Small screen");
-        add("Medium screen");
-        add("Normal screen");
-        }};
 
     loginPage() {
-        this("Normal screen"); //Default
-    }
-    loginPage(String screenType) {
         setName("Car Rental");
-        
-        if (screenType.equals("Small screen")) {
-        setSize(400, 600);
-        } else if (screenType.equals("Medium screen")) {
-        setSize(600, 700);
-        } else {
-        setSize(700, 600);
-        }
+        setSize(650, 350);
         setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         lblHeader = new JLabel("Car Rental App");
-        lblHeader.setBounds(50, 50, 100, 100);
+        lblHeader.setBounds(50, 50, 100, 30);
         add(lblHeader);
         
         lblUsername = new JLabel("Enter Username: ", SwingConstants.RIGHT);
-        lblUsername.setBounds(100, 200, 200, 40);
+        lblUsername.setBounds(100, 130, 200, 40);
         add(lblUsername);
         
         lblPassword = new JLabel("Enter Password: ", SwingConstants.RIGHT);
-        lblPassword.setBounds(100, 260, 200, 40);
+        lblPassword.setBounds(100, 190, 200, 40);
         add(lblPassword);
         
         txtUsername = new JTextField("Username");
-        txtUsername.setBounds(350, 200, 200, 40);
+        txtUsername.setBounds(350, 130, 200, 40);
         add(txtUsername);
         
         txtPassword = new JTextField("********");
-        txtPassword.setBounds(350, 260, 200, 40);
+        txtPassword.setBounds(350, 190, 200, 40);
         add(txtPassword);
         
         btnLogin = new JButton("LogIn");        
-        btnLogin.setBounds(240, 330, 80, 40);
+        btnLogin.setBounds(240, 260, 80, 40);
         add(btnLogin);
         
         btnReset = new JButton("Reset");        
-        btnReset.setBounds(410, 330, 80, 40);
+        btnReset.setBounds(410, 260, 80, 40);
         add(btnReset);
         
         btnSignup = new JButton("Create new account");        
-        btnSignup.setBounds(200, 400, 350, 40);
+        btnSignup.setBounds(200, 330, 350, 40);
         add(btnSignup);
         
         btnLogin.addActionListener(this);
