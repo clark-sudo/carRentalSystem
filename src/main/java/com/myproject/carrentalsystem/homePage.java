@@ -81,19 +81,19 @@ public class homePage extends JFrame implements ActionListener{
             loginPage lp = new loginPage();
             lp.setVisible(true);
         } 
-//        else if (e.getSource() == btnMaintenance) {
-//            dispose();
-//            vehicleMaintenance cm = new vehicleMaintenance();
-//            cm.setVisible(true);
-//        } else if (e.getSource() == btnAvailable) {
-//            dispose();
-//            rentalInvoices cal = new rentalInvoices();
-//            cal.setVisible(true);
-//        } else if (e.getSource() == btnCustomer) {
-//            dispose();
-//            bookingReservation ctm = new bookingReservation();
-//            ctm.setVisible(true);
-//        } 
+        else if (e.getSource() == btnMaintenance) {
+            dispose();
+            vehicleMaintenance cm = new vehicleMaintenance();
+            cm.setVisible(true);
+        } else if (e.getSource() == btnAvailable) {
+            dispose();
+            rentalInvoices cal = new rentalInvoices();
+            cal.setVisible(true);
+        } else if (e.getSource() == btnCustomer) {
+            dispose();
+            bookingReservation ctm = new bookingReservation();
+            ctm.setVisible(true);
+        } 
         else if (e.getSource() == btnCars) {
             dispose();
             carRentals car = new carRentals();
