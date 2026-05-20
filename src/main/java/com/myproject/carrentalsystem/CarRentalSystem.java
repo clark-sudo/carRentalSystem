@@ -4,7 +4,7 @@
 
 package com.myproject.carrentalsystem;
 
-import javax.swing.*;
+//import javax.swing.*;
 
 /**
  *
@@ -13,12 +13,12 @@ import javax.swing.*;
 public class CarRentalSystem {
     
     public static void main(String[] args) {
-        String choice = (String) JOptionPane.showInputDialog(null, "Select Screen Size", "Screen selection", 
-                JOptionPane.QUESTION_MESSAGE, null, homePage.screenSizes.toArray(), homePage.screenSizes.get(2));
+//        String choice = (String) JOptionPane.showInputDialog(null, "Plese confirm if you wish to switch to Dark Mode.",
+//                "Dark Mode", JOptionPane.QUESTION_MESSAGE, null, signupPage.darkMode.toArray(), signupPage.darkMode.get(1));
+//        
+//        if (choice == null) choice = "Normal Screen";
         
-        if (choice == null) choice = "Normal Screen";
-        
-        loginPage lp = new loginPage(choice);
-        lp.setVisible(true);
+        signupPage sp = new signupPage();
+        sp.setVisible(true);
     }
 }

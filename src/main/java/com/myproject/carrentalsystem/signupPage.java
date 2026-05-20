@@ -4,6 +4,7 @@
  */
 package com.myproject.carrentalsystem;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import javax.swing.*;
 public class signupPage extends JFrame implements ActionListener{
     
     private JLabel lblHeader, lblUsername, lblPassword;
-    private JButton btnLogin, btnReset, btnSignup;
+    private JButton btnCreate, btnReset, btnSignin;
     private JTextField txtUsername, txtPassword;
     
     private String username = "admin";
@@ -25,33 +26,40 @@ public class signupPage extends JFrame implements ActionListener{
         add("Small screen");
         add("Medium screen");
         add("Normal screen");
+    }};
+    protected static final ArrayList<String> darkMode = new ArrayList<>(){{
+        add("ON");
+        add("OFF");
         }};
 
     signupPage() {
         this("Normal screen"); //Default
     }
     signupPage(String screenType) {
-        setName("Car Rental");
         
-        if (screenType.equals("Small screen")) {
-        setSize(400, 600);
-        } else if (screenType.equals("Medium screen")) {
-        setSize(600, 700);
+        if (screenType.equals("ON")){
+        getContentPane().setBackground(new Color(45, 52, 54));
+        } else if (screenType.equals("OFF")){
+        getContentPane().setBackground(new Color(245, 245, 220));
         } else {
-        setSize(700, 600);
         }
+        
+        setSize(700, 600);
         setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         lblHeader = new JLabel("Car Rental App");
+        lblHeader.setForeground(Color.BLUE);
         lblHeader.setBounds(50, 50, 100, 100);
         add(lblHeader);
         
         lblUsername = new JLabel("Enter new Username: ", SwingConstants.RIGHT);
+        lblUsername.setForeground(Color.BLUE);
         lblUsername.setBounds(100, 200, 200, 40);
         add(lblUsername);
         
         lblPassword = new JLabel("Enter new Password: ", SwingConstants.RIGHT);
+        lblPassword.setForeground(Color.BLUE);
         lblPassword.setBounds(100, 260, 200, 40);
         add(lblPassword);
         
@@ -63,33 +71,39 @@ public class signupPage extends JFrame implements ActionListener{
         txtPassword.setBounds(350, 260, 200, 40);
         add(txtPassword);
         
-        btnLogin = new JButton("LogIn");        
-        btnLogin.setBounds(230, 330, 80, 40);
-        add(btnLogin);
+        btnCreate = new JButton("SignIn");
+        btnCreate.setBackground(new Color(66, 133, 244));
+        btnCreate.setForeground(Color.white);
+        btnCreate.setBounds(230, 330, 80, 40);
+        add(btnCreate);
         
-        btnReset = new JButton("Reset");        
+        btnReset = new JButton("Reset");  
+        btnReset.setBackground(new Color(66, 133, 244));
+        btnReset.setForeground(Color.white); 
         btnReset.setBounds(400, 330, 80, 40);
         add(btnReset);
         
-        btnSignup = new JButton("Already have an account?");        
-        btnSignup.setBounds(200, 400, 310, 40);
-        add(btnSignup);
+        btnSignin = new JButton("Already have an account?"); 
+        btnSignin.setBackground(new Color(66, 133, 244));
+        btnSignin.setForeground(Color.white);
+        btnSignin.setBounds(200, 400, 310, 40);
+        add(btnSignin);
         
-        btnLogin.addActionListener(this);
+        btnCreate.addActionListener(this);
         btnReset.addActionListener(this);
-        btnSignup.addActionListener(this);
+        btnSignin.addActionListener(this);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == btnLogin) {
+        if (e.getSource() == btnCreate) {
             dispose();
             loginPage lp = new loginPage();
             lp.setVisible(true);
         } else if (e.getSource() == btnReset) {
             txtUsername.setText("");
             txtPassword.setText("");
-        } else if (e.getSource() == btnSignup) {
+        } else if (e.getSource() == btnSignin) {
             dispose();
             loginPage lp = new loginPage();
             lp.setVisible(true);
