@@ -84,32 +84,32 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         add(btnLogout);
         
         lblHeader = new JLabel("Repair and Maintenance");
-        lblHeader.setForeground(Color.white);
+        lblHeader.setForeground(Color.BLUE);
         lblHeader.setBounds(350, 50, 200, 30);
         add(lblHeader);
         
         lblCarID = new JLabel("Car ID ");
-        lblCarID.setForeground(Color.white);
+        lblCarID.setForeground(Color.BLUE);
         lblCarID.setBounds(400, 130, 100, 40);
         add(lblCarID);
         
         lblCarParts = new JLabel("Car Parts ");
-        lblCarParts.setForeground(Color.white);
+        lblCarParts.setForeground(Color.BLUE);
         lblCarParts.setBounds(400, 190, 100, 40);
         add(lblCarParts);
         
         lblQuantity = new JLabel("Quantity ");
-        lblQuantity.setForeground(Color.white);
+        lblQuantity.setForeground(Color.BLUE);
         lblQuantity.setBounds(400, 250, 100, 40);
         add(lblQuantity);
         
         lblUnitPrice = new JLabel("Unit Price ");
-        lblUnitPrice.setForeground(Color.white);
+        lblUnitPrice.setForeground(Color.BLUE);
         lblUnitPrice.setBounds(400, 310, 100, 40);
         add(lblUnitPrice);
         
         lblDate = new JLabel("Date ");
-        lblDate.setForeground(Color.white);
+        lblDate.setForeground(Color.BLUE);
         lblDate.setBounds(400, 370, 100, 40);
         add(lblDate);
         
@@ -151,7 +151,7 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         btnDelete.setBounds(450, 510, 100, 40);
         add(btnDelete);
         
-        btnCancel = new JButton("Cancel");  
+        btnCancel = new JButton("Clear");  
         btnCancel.setBackground(new Color(0, 130, 120));
         btnCancel.setForeground(Color.white);      
         btnCancel.setBounds(650, 510, 100, 40);
@@ -173,7 +173,7 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         add(spTable);
         
         tblDisplay = new JTable();
-        tblDisplay.setBackground(new Color(45, 52, 54));
+        tblDisplay.setBackground(new Color(245, 245, 220));
         tblDisplay.setBounds(300, 0, 1070, 700);
         add(tblDisplay);
         

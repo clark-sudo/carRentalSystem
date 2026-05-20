@@ -150,7 +150,7 @@ public class bookingReservation extends JFrame implements ActionListener{
         btnDelete.setBounds(450, 510, 100, 40);
         add(btnDelete);
         
-        btnCancel = new JButton("Cancel");  
+        btnCancel = new JButton("Clear");  
         btnCancel.setBackground(new Color(0, 130, 120));
         btnCancel.setForeground(Color.white);      
         btnCancel.setBounds(650, 510, 100, 40);

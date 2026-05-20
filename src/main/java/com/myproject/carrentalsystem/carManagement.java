@@ -154,10 +154,10 @@ public class carManagement extends JFrame implements ActionListener{
         } else if (e.getSource() == btnEdit) {
             String availability = cmbAvailable.getSelectedItem().toString();
             int selectedRow = tblManagement.getSelectedRow();
+            if (selectedRow != -1) {
 //                    int hourRent = Integer.parseInt(txtHour.getText());
 //            String carModel = txtModel.getText();
 //                    float rentalPrice = 1f;
-            if (selectedRow != -1) {
 //                    manager.updateCars(selectedRow, hourRent, carModel, rentalPrice);
                 dfltModel.setValueAt(
                         txtCarID.getText(), selectedRow, 0 );
