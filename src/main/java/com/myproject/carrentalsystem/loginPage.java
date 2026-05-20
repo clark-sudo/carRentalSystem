@@ -4,6 +4,7 @@
  */
 package com.myproject.carrentalsystem;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -19,24 +20,28 @@ public class loginPage extends JFrame implements ActionListener{
     private JButton btnLogin, btnReset, btnSignup;
     private JTextField txtUsername, txtPassword;
     
-    private String username = "admin";
-    private String password = "admin123";
+    private String existingUsername = "admin";
+    private String existingPassword = "admin123";
 
     loginPage() {
         setName("Car Rental");
+        getContentPane().setBackground(new Color(20, 80, 180));
         setSize(650, 350);
         setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         lblHeader = new JLabel("Car Rental App");
+        lblHeader.setForeground(Color.white);
         lblHeader.setBounds(50, 50, 100, 30);
         add(lblHeader);
         
         lblUsername = new JLabel("Enter Username: ", SwingConstants.RIGHT);
+        lblUsername.setForeground(Color.white);
         lblUsername.setBounds(100, 130, 200, 40);
         add(lblUsername);
         
         lblPassword = new JLabel("Enter Password: ", SwingConstants.RIGHT);
+        lblPassword.setForeground(Color.white);
         lblPassword.setBounds(100, 190, 200, 40);
         add(lblPassword);
         
@@ -68,9 +73,16 @@ public class loginPage extends JFrame implements ActionListener{
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnLogin) {
+            String username = txtUsername.getText();
+            String password = txtPassword.getText();
+            if (username.equals(existingUsername) && password.equals(existingPassword) ) {
             dispose();
             homePage hp = new homePage();
             hp.setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(this, "Invalid Username or Password.",
+                        "Wrong Credentials", JOptionPane.ERROR_MESSAGE);
+            }
         } else if (e.getSource() == btnReset) {
             txtUsername.setText("");
             txtPassword.setText("");

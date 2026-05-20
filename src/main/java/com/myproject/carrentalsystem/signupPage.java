@@ -4,6 +4,7 @@
  */
 package com.myproject.carrentalsystem;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -25,33 +26,40 @@ public class signupPage extends JFrame implements ActionListener{
         add("Small screen");
         add("Medium screen");
         add("Normal screen");
+    }};
+    protected static final ArrayList<String> darkMode = new ArrayList<>(){{
+        add("ON");
+        add("OFF");
         }};
 
     signupPage() {
         this("Normal screen"); //Default
     }
     signupPage(String screenType) {
-        setName("Car Rental");
         
-        if (screenType.equals("Small screen")) {
-        setSize(400, 600);
-        } else if (screenType.equals("Medium screen")) {
-        setSize(600, 700);
+        if (screenType.equals("ON")){
+        getContentPane().setBackground(new Color(45, 52, 54));
+        } else if (screenType.equals("OFF")){
+        getContentPane().setBackground(new Color(245, 245, 220));
         } else {
-        setSize(700, 600);
         }
+        
+        setSize(700, 600);
         setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         lblHeader = new JLabel("Car Rental App");
+        lblHeader.setForeground(Color.BLUE);
         lblHeader.setBounds(50, 50, 100, 100);
         add(lblHeader);
         
         lblUsername = new JLabel("Enter new Username: ", SwingConstants.RIGHT);
+        lblUsername.setForeground(Color.BLUE);
         lblUsername.setBounds(100, 200, 200, 40);
         add(lblUsername);
         
         lblPassword = new JLabel("Enter new Password: ", SwingConstants.RIGHT);
+        lblPassword.setForeground(Color.BLUE);
         lblPassword.setBounds(100, 260, 200, 40);
         add(lblPassword);
         
@@ -63,15 +71,21 @@ public class signupPage extends JFrame implements ActionListener{
         txtPassword.setBounds(350, 260, 200, 40);
         add(txtPassword);
         
-        btnCreate = new JButton("SignIn");        
+        btnCreate = new JButton("SignIn");
+        btnCreate.setBackground(new Color(66, 133, 244));
+        btnCreate.setForeground(Color.white);
         btnCreate.setBounds(230, 330, 80, 40);
         add(btnCreate);
         
-        btnReset = new JButton("Reset");        
+        btnReset = new JButton("Reset");  
+        btnReset.setBackground(new Color(66, 133, 244));
+        btnReset.setForeground(Color.white); 
         btnReset.setBounds(400, 330, 80, 40);
         add(btnReset);
         
-        btnSignin = new JButton("Already have an account?");        
+        btnSignin = new JButton("Already have an account?"); 
+        btnSignin.setBackground(new Color(66, 133, 244));
+        btnSignin.setForeground(Color.white);
         btnSignin.setBounds(200, 400, 310, 40);
         add(btnSignin);
         

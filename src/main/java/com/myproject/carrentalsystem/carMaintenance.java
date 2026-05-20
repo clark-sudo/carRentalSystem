@@ -4,6 +4,7 @@
  */
 package com.myproject.carrentalsystem;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
@@ -22,35 +23,43 @@ public class carMaintenance extends JFrame implements ActionListener{
     private JTable tblManagement;
 
     carMaintenance() {
+        getContentPane().setBackground(new Color(45, 52, 54));
         setSize(1000, 700);
         setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         lblHeader = new JLabel("Car Maintenance");
+        lblHeader.setForeground(Color.white);
         lblHeader.setBounds(50, 50, 100, 30);
         add(lblHeader);
         
         lblCarID = new JLabel("Car ID ");
+        lblCarID.setForeground(Color.white);
         lblCarID.setBounds(100, 130, 100, 40);
         add(lblCarID);
         
         lblCarParts = new JLabel("Car Parts ");
+        lblCarParts.setForeground(Color.white);
         lblCarParts.setBounds(100, 190, 100, 40);
         add(lblCarParts);
         
         lblQuantity = new JLabel("Quantity ");
+        lblQuantity.setForeground(Color.white);
         lblQuantity.setBounds(100, 250, 100, 40);
         add(lblQuantity);
         
         lblUnitPrice = new JLabel("Unit Price ");
+        lblUnitPrice.setForeground(Color.white);
         lblUnitPrice.setBounds(100, 310, 100, 40);
         add(lblUnitPrice);
         
         lblDate = new JLabel("Date ");
+        lblDate.setForeground(Color.white);
         lblDate.setBounds(100, 370, 100, 40);
         add(lblDate);
         
         lblDueDate = new JLabel("Due Date ");
+        lblDueDate.setForeground(Color.white);
         lblDueDate.setBounds(100, 430, 100, 40);
         add(lblDueDate);
         
@@ -78,19 +87,27 @@ public class carMaintenance extends JFrame implements ActionListener{
         txtDueDate.setBounds(250, 430, 200, 40);
         add(txtDueDate);
         
-        btnAdd = new JButton("Add");        
+        btnAdd = new JButton("Add");      
+        btnAdd.setBackground(new Color(0, 130, 120));
+        btnAdd.setForeground(Color.white);     
         btnAdd.setBounds(150, 500, 100, 40);
         add(btnAdd);
         
         btnEdit = new JButton("Edit");        
+        btnEdit.setBackground(new Color(0, 130, 120));
+        btnEdit.setForeground(Color.white);   
         btnEdit.setBounds(350, 500, 100, 40);
         add(btnEdit);
         
-        btnDelete = new JButton("Delete");        
+        btnDelete = new JButton("Delete");    
+        btnDelete.setBackground(new Color(0, 130, 120));
+        btnDelete.setForeground(Color.white);      
         btnDelete.setBounds(150, 570, 100, 40);
         add(btnDelete);
         
         btnCancel = new JButton("Cancel");        
+        btnCancel.setBackground(new Color(0, 130, 120));
+        btnCancel.setForeground(Color.white);  
         btnCancel.setBounds(350, 570, 100, 40);
         add(btnCancel);
         
