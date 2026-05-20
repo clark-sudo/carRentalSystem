@@ -80,8 +80,7 @@ public class homePage extends JFrame implements ActionListener{
             dispose();
             loginPage lp = new loginPage();
             lp.setVisible(true);
-        } 
-        else if (e.getSource() == btnMaintenance) {
+        } else if (e.getSource() == btnMaintenance) {
             dispose();
             vehicleMaintenance cm = new vehicleMaintenance();
             cm.setVisible(true);
@@ -93,8 +92,7 @@ public class homePage extends JFrame implements ActionListener{
             dispose();
             bookingReservation ctm = new bookingReservation();
             ctm.setVisible(true);
-        } 
-        else if (e.getSource() == btnCars) {
+        } else if (e.getSource() == btnCars) {
             dispose();
             carRentals car = new carRentals();
             car.setVisible(true);
