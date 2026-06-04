@@ -23,7 +23,7 @@ public class carManagement extends JFrame implements ActionListener{
     protected static final String[] confirmation = {"Yes", "No"};
     private JTable tblManagement;
     private DefaultTableModel dfltModel;
-    private com.myproject.carrentalsystem.rentalCarsManager manager = new com.myproject.carrentalsystem.rentalCarsManager();
+    //private com.myproject.carrentalsystem.rentalCarsManager manager = new com.myproject.carrentalsystem.rentalCarsManager();
 
     carManagement() {
         setName("Car Management");

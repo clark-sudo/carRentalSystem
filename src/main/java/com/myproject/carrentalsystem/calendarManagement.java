@@ -7,6 +7,10 @@ package com.myproject.carrentalsystem;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
@@ -24,8 +28,8 @@ public class calendarManagement extends JFrame implements ActionListener{
     private JTable tblManagement;
     private JScrollPane spTable;
     private DefaultTableModel model;
-    private static final String[] columnData = {"Car ID", "Customer ID", "Customer Name", "Rental Fee", "Rental Hour", "Date", "Due Date"};
-    private static final Object[][] rowData = {};
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+    private static ArrayList<CalendarInMemory> rentalList = new ArrayList<>();
 
     calendarManagement() {
         getContentPane().setBackground(new Color(245, 245, 220));
@@ -125,24 +129,13 @@ public class calendarManagement extends JFrame implements ActionListener{
         btnCancel.setBounds(350, 630, 100, 40);
         add(btnCancel);
         
-        model = new DefaultTableModel(rowData, columnData)/*;
-        dfltModel.setColumnIdentifiers(new String[] {
-                "Car ID",
-                "Customer ID",
-                "Customer Name",
-                "Rental Fee",
-                "Rental Hour",
-                "Date",
-                "Due Date"
-        });*/
-            {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        model = new DefaultTableModel();
+        model.setColumnIdentifiers(new String[]{
+        "Car ID", "Customer ID", "Customer Name", "Rental Fee", "Date", "Due Date"
+        });
         
         tblManagement = new JTable(model);
+        loadTableData();
         spTable = new JScrollPane(tblManagement);
         spTable.setBounds(500, 100, 600, 500);
         add(spTable);
@@ -195,18 +188,69 @@ public class calendarManagement extends JFrame implements ActionListener{
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.");
             }
         } else if (e.getSource() == btnAdd) {
-            String carID = (String) cmbCarID.getSelectedItem();
-            model.addRow(new Object[]{
-                carID,
-                txtCustomerID.getText(),
-                txtCustomer.getText(),
-                txtRentFee.getText(),
-                txtRentHour.getText(),
-                txtDate.getText(),
-                txtDueDate.getText()    }   );
-            JOptionPane.showMessageDialog(null, "Record Added Successfully!");
+            String carID = cmbCarID.getSelectedItem().toString();
+            String customerID = txtCustomerID.getText();
+            String customerName = txtCustomer.getText();
+            String rentFee = txtRentFee.getText();
+            String rentHour = txtRentHour.getText();
+            String startDateStr = txtDate.getText();
+            String dueDateStr = txtDueDate.getText();
+            
+            try{
+                LocalDate startDate = LocalDate.parse(startDateStr, formatter);
+                LocalDate dueDate = LocalDate.parse(dueDateStr, formatter);
+                
+                if(dueDate.isBefore(startDate)){
+                    JOptionPane.showMessageDialog(this, "Error, due date cannot be before start date.");
+                    return;
+                }
+                
+                CalendarInMemory cim = new CalendarInMemory(
+                        carID, 
+                        customerID, 
+                        customerName, 
+                        rentFee,
+                        rentHour,
+                        startDate.format(formatter), 
+                        dueDate.format(formatter)
+                );
+                rentalList.add(cim);
+                
+                model.addRow(new Object[]{
+                    carID,
+                    customerID,
+                    customerName,
+                    rentFee,
+                    rentHour,
+                    startDate.format(formatter),
+                    dueDate.format(formatter)
+                });
+                
+                txtCustomerID.setText("");
+                txtCustomer.setText("");
+                txtRentFee.setText("");
+                txtRentHour.setText("");
+                txtDate.setText("");
+                txtDueDate.setText("");
+            } catch(DateTimeParseException ex){
+                JOptionPane.showMessageDialog(this, "Invalid date format! please use MM/dd/yyyy.");
+            }
         }
     }
+    private void loadTableData(){
+            model.setRowCount(0);
+            for(CalendarInMemory cim : rentalList){
+                model.addRow(new Object[]{
+                    cim.getCarID(),
+                    cim.getCustomerID(),
+                    cim.getCustomerName(),
+                    cim.getRentFee(),
+                    cim.getRentHour(),
+                    cim.getStartDate(),
+                    cim.getDueDate()
+                });
+            }
+        }
     
 }
 /*
@@ -276,3 +320,5 @@ import java.time.format.DateTimeParseException;
     
 }
 */
+
+
