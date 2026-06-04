@@ -201,7 +201,7 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
             cm.setVisible(true);
         } else if (e.getSource() == btnAvailable) {
             dispose();
-            rentalInvoices cal = new rentalInvoices();
+            calendarManagement cal = new calendarManagement();
             cal.setVisible(true);
         } else if (e.getSource() == btnCustomer) {
             dispose();
