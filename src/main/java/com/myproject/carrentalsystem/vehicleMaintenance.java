@@ -10,18 +10,20 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.util.LinkedList;
 
 /**
  *
  * @author hicru
  */
 public class vehicleMaintenance extends JFrame implements ActionListener{
-    
-    private JLabel lblApp, lblHeader, lblCarID, lblCarParts, lblQuantity, lblUnitPrice, lblDate, lblDueDate;
+
+    private JLabel lblApp, lblHeader, lblCarID, lblType, lblDescription, lblCost, lblDate, lblDueDate; 
     private JButton btnCars, btnCustomer, btnAvailable, btnMaintenance, btnLogout, btnAdd, btnEdit, btnDelete, btnCancel;
-    private JTextField txtCarParts, txtQuantity, txtUnitPrice, txtDate, txtDueDate;
-    private JComboBox<String> cmbCarID;
-    protected static final String[] confirmation = {"1", "2"};
+    private JTextField txtDescription, txtCost, txtDate; 
+    private JComboBox<String> cmbCarID, cmbType;
+    
+    protected static final String[] confirmation = {"TOYOTA Innova", "TOYOTA Rush", "TOYOTA Veloz", "TOYOTA Avanza" , "TOYOTA Vios", "TOYOTA Wigo1", "TOYOTA Wigo2", "HONDA BRV", "MITSUBISHI Mirage", "SUZUKI Espresso", "NISSAN NV350"};
     private JTable tblManagement, tblDisplay;
     private JScrollPane spTable;
     private DefaultTableModel dfltModel;
@@ -29,6 +31,9 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         add("ON");
         add("OFF");
         }};
+    
+
+    private LinkedList<MaintenanceRecord> maintenanceHistory = new LinkedList<>();
 
     vehicleMaintenance() {
         this("Normal screen");
@@ -47,6 +52,7 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         setSize(1370, 730);
         setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
         
         lblApp = new JLabel("Car Rental App", SwingConstants.CENTER);
         lblApp.setForeground(Color.white);
@@ -93,20 +99,20 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         lblCarID.setBounds(400, 130, 100, 40);
         add(lblCarID);
         
-        lblCarParts = new JLabel("Car Parts ");
-        lblCarParts.setForeground(Color.BLUE);
-        lblCarParts.setBounds(400, 190, 100, 40);
-        add(lblCarParts);
+        lblType = new JLabel("Type ");
+        lblType.setForeground(Color.BLUE);
+        lblType.setBounds(400, 190, 100, 40);
+        add(lblType);
         
-        lblQuantity = new JLabel("Quantity ");
-        lblQuantity.setForeground(Color.BLUE);
-        lblQuantity.setBounds(400, 250, 100, 40);
-        add(lblQuantity);
+        lblDescription = new JLabel("Description ");
+        lblDescription.setForeground(Color.BLUE);
+        lblDescription.setBounds(400, 250, 100, 40);
+        add(lblDescription);
         
-        lblUnitPrice = new JLabel("Unit Price ");
-        lblUnitPrice.setForeground(Color.BLUE);
-        lblUnitPrice.setBounds(400, 310, 100, 40);
-        add(lblUnitPrice);
+        lblCost = new JLabel("Total Cost ");
+        lblCost.setForeground(Color.BLUE);
+        lblCost.setBounds(400, 310, 100, 40);
+        add(lblCost);
         
         lblDate = new JLabel("Date ");
         lblDate.setForeground(Color.BLUE);
@@ -117,17 +123,18 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         cmbCarID.setBounds(550, 130, 200, 40);
         add(cmbCarID);
         
-        txtCarParts = new JTextField();
-        txtCarParts.setBounds(550, 190, 200, 40);
-        add(txtCarParts);
+        String[] serviceTypes = {"Routine Checkup", "Interim Car Service Intervals", "Full Car Service Intervals", "Major Car Service Intervals", "Oil Change", "Body Repair", "Others (State in the description)"};
+        cmbType = new JComboBox<>(serviceTypes);
+        cmbType.setBounds(550, 190, 200, 40);
+        add(cmbType);
         
-        txtQuantity = new JTextField();
-        txtQuantity.setBounds(550, 250, 200, 40);
-        add(txtQuantity);
+        txtDescription = new JTextField();
+        txtDescription.setBounds(550, 250, 200, 40);
+        add(txtDescription);
         
-        txtUnitPrice = new JTextField();
-        txtUnitPrice.setBounds(550, 310, 200, 40);
-        add(txtUnitPrice);
+        txtCost = new JTextField();
+        txtCost.setBounds(550, 310, 200, 40);
+        add(txtCost);
         
         txtDate = new JTextField();
         txtDate.setBounds(550, 370, 200, 40);
@@ -160,9 +167,9 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         dfltModel = new DefaultTableModel();
         dfltModel.setColumnIdentifiers(new String[] {
             "Car ID",
-            "Car Parts",
-            "Quantity",
-            "Total Amount",
+            "Maintenance Type",
+            "Description",
+            "Total Cost",
             "Date"
         });
 
@@ -171,7 +178,7 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         spTable.setBackground(new Color(177, 218, 220));
         spTable.setBounds(800, 130, 500, 500);
         add(spTable);
-        
+       
         tblDisplay = new JTable();
         tblDisplay.setBackground(new Color(245, 245, 220));
         tblDisplay.setBounds(300, 0, 1070, 700);
@@ -201,7 +208,7 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
             cm.setVisible(true);
         } else if (e.getSource() == btnAvailable) {
             dispose();
-            calendarManagement cal = new calendarManagement();
+            rentalInvoices cal = new rentalInvoices();
             cal.setVisible(true);
         } else if (e.getSource() == btnCustomer) {
             dispose();
@@ -212,9 +219,8 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
             carRentals car = new carRentals();
             car.setVisible(true);
         } else if (e.getSource() == btnCancel) {
-            txtCarParts.setText("");
-            txtQuantity.setText("");
-            txtUnitPrice.setText("");
+            txtDescription.setText("");
+            txtCost.setText("");
             txtDate.setText("");
             JOptionPane.showMessageDialog(null, "Text Fields Cleared!");
         } else if (e.getSource() == btnDelete) {
@@ -239,11 +245,9 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
                 dfltModel.setValueAt(
                         carID, selectedRow, 0 );
                 dfltModel.setValueAt(
-                        txtCarParts.getText(), selectedRow, 1 );
-                dfltModel.setValueAt(
-                        txtQuantity.getText(), selectedRow, 2 );
+                        txtDescription.getText(), selectedRow, 2 );
                 dfltModel.setValueAt (
-                        txtUnitPrice.getText(), selectedRow, 3 );
+                        txtCost.getText(), selectedRow, 3 );
                 dfltModel.setValueAt(
                         txtDate.getText(), selectedRow, 4 );
                 JOptionPane.showMessageDialog(null, "Car Maintenance Updated Successfully!");
@@ -252,25 +256,47 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
             }
         } else if (e.getSource() == btnAdd) {
             String carId = cmbCarID.getSelectedItem().toString();
-            String brandMake = txtCarParts.getText();
-            String carModel = txtQuantity.getText();
-            String rentalPrice = txtUnitPrice.getText();
-            String availability = txtDate.getText();
-                    int hourRent = 1;
-//                com.myproject.carrentalsystem.rentalCars car = new com.myproject.carrentalsystem.rentalCars(hourRent, carModel, rentalPrice);
+            String type = cmbType.getSelectedItem().toString();
+            String desc = txtDescription.getText();
+            String costStr = txtCost.getText();
+            String date = txtDate.getText();
+
+            double cost = 0.0;
+            try {
+                cost = Double.parseDouble(costStr);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "Please enter a valid numeric cost.");
+                return;
+            }
+
+            MaintenanceRecord record = new MaintenanceRecord(carId, type, desc, cost, date);
+            maintenanceHistory.add(record); 
+
             dfltModel.addRow(new Object[]{
                 carId,
-                brandMake,
-                carModel,
-                rentalPrice,
-                availability
+                type,
+                desc,
+                cost,
+                date
             });
+
             JOptionPane.showMessageDialog(null, "Car Maintenance Added Successfully!");
-            txtCarParts.setText("");
-            txtQuantity.setText("");
-            txtUnitPrice.setText("");
+            txtDescription.setText("");
+            txtCost.setText("");
             txtDate.setText("");
-        }
+    }
     }
     
 }
+    class MaintenanceRecord {
+    String carId, type, description, date;
+    double cost;
+
+    public MaintenanceRecord(String carId, String type, String description, double cost, String date) {
+        this.carId = carId;
+        this.type = type;
+        this.description = description;
+        this.cost = cost;
+        this.date = date;
+        }
+    }
