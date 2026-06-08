@@ -10,4 +10,5 @@
         <maven.compiler.release>23</maven.compiler.release>
         <exec.mainClass>com.myproject.carrentalsystem.CarRentalSystem</exec.mainClass>
     </properties>
+    
 </project>

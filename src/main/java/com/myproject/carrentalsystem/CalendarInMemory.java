@@ -58,5 +58,32 @@ public class CalendarInMemory {
         return dueDate;
     }
     
+    public void setCarID(String carID) {
+    this.carID = carID;
+    }
+
+    public void setCustomerID(String customerID) {
+    this.customerID = customerID;
+    }
+
+    public void setCustomerName(String customerName) {
+    this.customerName = customerName;
+    }
+
+    public void setRentFee(String rentFee) {
+    this.rentFee = rentFee;
+    }
+
+    public void setRentHour(String rentHour) {
+    this.rentHour = rentHour;
+    }
+
+    public void setStartDate(String startDate) {
+    this.startDate = startDate;
+    }
+
+    public void setDueDate(String dueDate) {
+    this.dueDate = dueDate;
+    }
     
 }

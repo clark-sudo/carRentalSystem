@@ -22,9 +22,8 @@ public class calendarManagement extends JFrame implements ActionListener{
     
     private JLabel lblHeader, lblCarID, lblCustomerID, lblCustomer, lblRentFee, lblRentHour, lblDate, lblDueDate;
     private JButton btnAdd, btnUpdate, btnDelete, btnCancel;
-    private JTextField txtCustomerID, txtCustomer, txtRentFee, txtRentHour, txtDate, txtDueDate;
-    private JComboBox<String> cmbCarID;
-    protected static final String[] confirmation = {"1", "2"};
+    private JTextField txtCustomer, txtRentFee, txtRentHour, txtDate, txtDueDate;
+    private JComboBox<String> cmbCarID, cmbCustomerID;
     private JTable tblManagement;
     private JScrollPane spTable;
     private DefaultTableModel model;
@@ -77,19 +76,25 @@ public class calendarManagement extends JFrame implements ActionListener{
         lblDueDate.setBounds(100, 490, 100, 40);
         add(lblDueDate);
         
-        cmbCarID = new JComboBox<>(confirmation);
+        cmbCarID = new JComboBox<>();
         cmbCarID.setBounds(250, 130, 200, 40);
         add(cmbCarID);
+        loadCarIDs();
         
-        txtCustomerID = new JTextField();
-        txtCustomerID.setBounds(250, 190, 200, 40);
-        add(txtCustomerID);
+        
+        
+        cmbCustomerID = new JComboBox<>();
+        cmbCustomerID.setBounds(250, 190, 200, 40);
+        add(cmbCustomerID);
+        loadCustomerIDs();
         
         txtCustomer = new JTextField();
+        txtCustomer.setEditable(false);
         txtCustomer.setBounds(250, 250, 200, 40);
         add(txtCustomer);
         
         txtRentFee = new JTextField();
+        txtRentFee.setEditable(false);
         txtRentFee.setBounds(250, 310, 200, 40);
         add(txtRentFee);
         
@@ -131,7 +136,8 @@ public class calendarManagement extends JFrame implements ActionListener{
         
         model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[]{
-        "Car ID", "Customer ID", "Customer Name", "Rental Fee", "Date", "Due Date"
+        "Car ID", "Customer ID", "Customer Name",
+        "Rental Fee", "Rental Hour", "Date", "Due Date"
         });
         
         tblManagement = new JTable(model);
@@ -144,6 +150,10 @@ public class calendarManagement extends JFrame implements ActionListener{
         btnUpdate.addActionListener(this);
         btnDelete.addActionListener(this);
         btnCancel.addActionListener(this);
+        cmbCarID.addActionListener(this);
+        cmbCustomerID.addActionListener(this);
+        
+        updateFieldStatus();
     }
 
     @Override
@@ -158,6 +168,7 @@ public class calendarManagement extends JFrame implements ActionListener{
             int choice = JOptionPane.showConfirmDialog(null, "Do you want to remove this from table?",
                     "Confirmation", JOptionPane.YES_NO_OPTION);
             if (choice == JOptionPane.YES_OPTION) {
+                rentalList.remove(selectedRow);
                 model.removeRow(selectedRow);
                 JOptionPane.showMessageDialog(null, "Recored Deleted Successfully!", "Warning", JOptionPane.WARNING_MESSAGE);
             } else {
@@ -166,7 +177,7 @@ public class calendarManagement extends JFrame implements ActionListener{
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to remove.");
             }
-            txtCustomerID.setText("");
+            cmbCustomerID.setSelectedIndex(0);
             txtCustomer.setText("");
             txtRentFee.setText("");
             txtRentHour.setText("");
@@ -176,8 +187,19 @@ public class calendarManagement extends JFrame implements ActionListener{
             String carID = (String) cmbCarID.getSelectedItem();
             int selectedRow = tblManagement.getSelectedRow();
             if (selectedRow != -1) {
+                
+                CalendarInMemory rental = rentalList.get(selectedRow);
+
+                rental.setCarID((String) cmbCarID.getSelectedItem());
+                rental.setCustomerID(cmbCustomerID.getSelectedItem().toString());
+                rental.setCustomerName(txtCustomer.getText());
+                rental.setRentFee(txtRentFee.getText());
+                rental.setRentHour(txtRentHour.getText());
+                rental.setStartDate(txtDate.getText());
+                rental.setDueDate(txtDueDate.getText());
+                
                 model.setValueAt(carID, selectedRow, 0 );
-                model.setValueAt(txtCustomerID.getText(), selectedRow, 1);
+                model.setValueAt(cmbCustomerID.getSelectedItem(), selectedRow, 1);
                 model.setValueAt(txtCustomer.getText(), selectedRow, 2);
                 model.setValueAt(txtRentFee.getText(), selectedRow, 3);
                 model.setValueAt(txtRentHour.getText(), selectedRow, 4);
@@ -189,7 +211,7 @@ public class calendarManagement extends JFrame implements ActionListener{
             }
         } else if (e.getSource() == btnAdd) {
             String carID = cmbCarID.getSelectedItem().toString();
-            String customerID = txtCustomerID.getText();
+            String customerID = cmbCustomerID.getSelectedItem().toString();
             String customerName = txtCustomer.getText();
             String rentFee = txtRentFee.getText();
             String rentHour = txtRentHour.getText();
@@ -216,6 +238,16 @@ public class calendarManagement extends JFrame implements ActionListener{
                 );
                 rentalList.add(cim);
                 
+                for (CarInMemory car : carRentals.carList) {
+
+                if (car.getCarID().equals(carID)) {
+
+                car.setAvailability("No");
+
+                break;
+                }
+            }
+                
                 model.addRow(new Object[]{
                     carID,
                     customerID,
@@ -226,7 +258,7 @@ public class calendarManagement extends JFrame implements ActionListener{
                     dueDate.format(formatter)
                 });
                 
-                txtCustomerID.setText("");
+                cmbCustomerID.setSelectedIndex(0);
                 txtCustomer.setText("");
                 txtRentFee.setText("");
                 txtRentHour.setText("");
@@ -235,6 +267,10 @@ public class calendarManagement extends JFrame implements ActionListener{
             } catch(DateTimeParseException ex){
                 JOptionPane.showMessageDialog(this, "Invalid date format! please use MM/dd/yyyy.");
             }
+        } else if(e.getSource() == cmbCarID){
+            updateFieldStatus();
+        } else if(e.getSource() == cmbCustomerID){
+            updateCustomerInfo();
         }
     }
     private void loadTableData(){
@@ -252,73 +288,82 @@ public class calendarManagement extends JFrame implements ActionListener{
             }
         }
     
+    private void loadCarIDs() {
+
+    cmbCarID.removeAllItems();
+
+    for (CarInMemory car : carRentals.carList) {
+        cmbCarID.addItem(car.getCarID());
+    }
 }
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- *
+    
+    private void loadCustomerIDs() {
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+    cmbCustomerID.removeAllItems();
 
-**
- *
- * @author hicru
- */
+    for (CustomerInMemory customer : bookingReservation.customerList) {
+        cmbCustomerID.addItem(customer.getCustomerID());
+    }
+}
+    
+    private void updateFieldStatus() {
 
-//{"Ctm ID", "Ctr ID", "Cst Name", "C. Fee", "Cstmr Date", "Cstr Date"};
-/*
+    String selectedCarID = (String) cmbCarID.getSelectedItem();
 
-        dfltModel = new DefaultTableModel();
-        model.setColumnIdentifiers(new String[]{
-        "Car ID", "Customer ID", "Customer Name", "Rental Fee", "Date", "Due Date"
-        });
+    if (selectedCarID == null) {
+        txtRentFee.setText("");
+        return;
+    }
 
-        tblManagement = new JTable(model);
+    for (CarInMemory car : carRentals.carList) {
 
-        JScrollPane scrollPane = new JScrollPane(tblManagement);
-        scrollPane.setBounds(500, 100, 550, 600);
-        add(scrollPane);
-        *
-        else if(e.getSource() == btnAdd){
-            String carID = cmbCarID.getSelectedItem().toString();
-            String customerID = txtCustomerID.getText();
-            String customerName = txtCustomer.getText();
-            String rentFee = txtRentFee.getText();
-            String startDateStr = txtDate.getText();
-            String dueDateStr = txtDueDate.getText();
-            
-            try{
-                LocalDate startDate = LocalDate.parse(startDateStr, formatter);
-                LocalDate dueDate = LocalDate.parse(dueDateStr, formatter);
-                
-                if(dueDate.isBefore(startDate)){
-                    JOptionPane.showMessageDialog(this, "Error, due date cannot be before start date.");
-                    return;
-                }
-                
-                model.addRow(new Object[]{
-                    carID,
-                    customerID,
-                    customerName,
-                    rentFee,
-                    startDate.format(formatter),
-                    dueDate.format(formatter)
-                });
-                
-                txtCustomerID.setText("");
-                txtCustomer.setText("");
-                txtRentFee.setText("");
-                txtDate.setText("");
-                txtDueDate.setText("");
-            } catch(DateTimeParseException ex){
-                JOptionPane.showMessageDialog(this, "Invalid date format! please use MM/dd/yyyy.");
+        if (car.getCarID().equals(selectedCarID)) {
+            txtRentFee.setText(car.getRentalPrice());
+
+            boolean available = car.getAvailability().equalsIgnoreCase("Yes");
+
+            cmbCustomerID.setEnabled(available);
+            txtCustomer.setEnabled(available);
+            txtRentFee.setEnabled(available);
+            txtRentHour.setEnabled(available);
+            txtDate.setEnabled(available);
+            txtDueDate.setEnabled(available);
+
+            btnAdd.setEnabled(available);
+
+            if (!available) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "This car is currently unavailable."
+                );
             }
+
+            break;
         }
     }
+}
+    
+    private void updateCustomerInfo() {
+
+    String selectedCustomerID =
+            (String) cmbCustomerID.getSelectedItem();
+
+    if (selectedCustomerID == null) {
+        return;
+    }
+
+    for (CustomerInMemory customer :
+            bookingReservation.customerList) {
+
+        if (customer.getCustomerID()
+                .equals(selectedCustomerID)) {
+
+            txtCustomer.setText(
+                    customer.getCustomerName());
+
+            break;
+        }
+    }
+}
     
 }
-*/
-
-
