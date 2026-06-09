@@ -5,6 +5,7 @@
 package com.myproject.carrentalsystem;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -15,77 +16,36 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author hicru
  */
-public class carRentals extends JFrame implements ActionListener{
+public class carRentals extends JPanel implements ActionListener{
     
-    private JLabel lblApp, lblHeader, lblCarID, lblMake, lblModel, lblAvailable, lblPrice;
-    private JButton btnCars, btnCustomer, btnAvailable, btnMaintenance, btnLogout, btnAdd, btnEdit, btnDelete, btnCancel;
+    private JLabel lblHeader, lblCarID, lblMake, lblModel, lblAvailable, lblPrice;
+    private JButton btnAdd, btnEdit, btnDelete, btnCancel;
     private JTextField txtCarID, txtMake, txtModel, txtPrice;
     private JComboBox<String> cmbAvailable;
     protected static final String[] confirmation = {"Yes", "No"};
-    private JTable tblManagement, tblDisplay;
-    private JScrollPane spTable;
-    private DefaultTableModel dfltModel;
-    protected static final ArrayList<String> darkMode = new ArrayList<>(){{
-        add("ON");
-        add("OFF");
-        }};
-
-    carRentals() {
-        this("Normal screen");
-    }
+    private JScrollPane scrollPane;
+    private JTable table;
+    private DefaultTableModel model;
+    private static final String[] tblColumns = {
+            "CarRegNo",
+            "Car Make",
+            "Car Model",
+            "Rental Price",
+            "Available"
+        };
+    private JPanel panel;
+    private static ArrayList<bookingReservation> rentalList = new ArrayList<>();
     
-    carRentals(String screenType) {
+    carRentals() {
         
-        if (screenType.equals("ON")){
-        getContentPane().setBackground(new Color(45, 52, 54));
-        } else if (screenType.equals("OFF")){
-        getContentPane().setBackground(new Color(245, 245, 220));
-        } else {
-        }
-        setName("Car Rental");
-        getContentPane().setBackground(new Color(45, 52, 54));
         setSize(1370, 730);
         setLayout(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
-        lblApp = new JLabel("Car Rental App", SwingConstants.CENTER);
-        lblApp.setForeground(Color.white);
-        lblApp.setBounds(0, 50, 300, 30);
-        add(lblApp);
-        
-        btnCars = new JButton("Car Registration");
-        btnCars.setBackground(new Color(66, 133, 244));
-        btnCars.setForeground(Color.white);
-        btnCars.setBounds(50, 130, 200, 40);
-        add(btnCars);
-        
-        btnCustomer = new JButton("Customer");
-        btnCustomer.setBackground(new Color(66, 133, 244));
-        btnCustomer.setForeground(Color.white);
-        btnCustomer.setBounds(50, 200, 200, 40);
-        add(btnCustomer);
-        
-        btnAvailable = new JButton("Calendar");
-        btnAvailable.setBackground(new Color(66, 133, 244));
-        btnAvailable.setForeground(Color.white);
-        btnAvailable.setBounds(50, 270, 200, 40);
-        add(btnAvailable);
-        
-        btnMaintenance = new JButton("Car Maintenance");
-        btnMaintenance.setBackground(new Color(66, 133, 244));
-        btnMaintenance.setForeground(Color.white);
-        btnMaintenance.setBounds(50, 340, 200, 40);
-        add(btnMaintenance);
-        
-        btnLogout = new JButton("LogOut");
-        btnLogout.setBackground(new Color(66, 133, 244));
-        btnLogout.setForeground(Color.white);
-        btnLogout.setBounds(50, 410, 200, 40);
-        add(btnLogout);
+//        setOpaque(false);
         
         lblHeader = new JLabel("Car Registration");
+        lblHeader.setFont(new Font("Arial", Font.BOLD, 16));
         lblHeader.setForeground(Color.BLUE);
-        lblHeader.setBounds(350, 50, 100, 30);
+        lblHeader.setBounds(350, 50, 200, 30);
         add(lblHeader);
         
         lblCarID = new JLabel("Car ID ");
@@ -114,18 +74,22 @@ public class carRentals extends JFrame implements ActionListener{
         add(lblAvailable);
         
         txtCarID = new JTextField("000001");
+        txtCarID.setBackground(new Color(240, 240, 244));
         txtCarID.setBounds(550, 130, 200, 40);
         add(txtCarID);
         
         txtMake = new JTextField("Ex. Toyota");
+        txtMake.setBackground(new Color(240, 240, 244));
         txtMake.setBounds(550, 190, 200, 40);
         add(txtMake);
         
         txtModel = new JTextField("Ex. Innova");
+        txtModel.setBackground(new Color(240, 240, 244));
         txtModel.setBounds(550, 250, 200, 40);
         add(txtModel);
         
         txtPrice = new JTextField();
+        txtPrice.setBackground(new Color(240, 240, 244));
         txtPrice.setBounds(550, 310, 200, 40);
         add(txtPrice);
         
@@ -157,101 +121,99 @@ public class carRentals extends JFrame implements ActionListener{
         btnCancel.setBounds(650, 510, 100, 40);
         add(btnCancel);
         
-        dfltModel = new DefaultTableModel();
-        dfltModel.setColumnIdentifiers(new String[] {
-            "CarRegNo",
-            "Car Make",
-            "Car Model",
-            "Rental Price",
-            "Available"
-        });
-
-        tblManagement = new JTable(dfltModel);
-        spTable = new JScrollPane(tblManagement);
-        spTable.setBackground(new Color(177, 218, 220));
-        spTable.setBounds(800, 130, 500, 500);
-        add(spTable);
+        model = new DefaultTableModel(tblColumns, 0);
+        table = new JTable(model);
+        scrollPane = new JScrollPane(table);
+        scrollPane.setBackground(new Color(177, 218, 220));
+        scrollPane.setBounds(800, 130, 500, 500);
+        add(scrollPane);
         
-        tblDisplay = new JTable();
-        tblDisplay.setBackground(new Color(245, 245, 220));
-        tblDisplay.setBounds(300, 0, 1070, 700);
-        add(tblDisplay);
+        panel = new JPanel();
+        panel.setBackground(new Color(245, 245, 220));
+        panel.setBounds(300, 0, 1070, 700);
+        add(panel);
         
         btnAdd.addActionListener(this);
         btnEdit.addActionListener(this);
         btnDelete.addActionListener(this);
         btnCancel.addActionListener(this);
-        
-        btnCars.addActionListener(this);
-        btnCustomer.addActionListener(this);
-        btnAvailable.addActionListener(this);
-        btnMaintenance.addActionListener(this);
-        btnLogout.addActionListener(this);
+
+        scrollPane.setVisible(false);
+        btnCancel.setVisible(false);
+        btnDelete.setVisible(false);
+        btnEdit.setVisible(false);
+        btnAdd.setVisible(false);
+        lblAvailable.setVisible(false);
+        lblCarID.setVisible(false);
+        lblHeader.setVisible(false);
+        lblMake.setVisible(false);
+        lblModel.setVisible(false);
+        lblPrice.setVisible(false);
+        txtPrice.setVisible(false);
+        txtModel.setVisible(false);
+        txtMake.setVisible(false);
+        txtCarID.setVisible(false);
+        cmbAvailable.setVisible(false);
+    }
+    
+    public void showCarRentals() {
+        scrollPane.setVisible(true);
+        btnCancel.setVisible(true);
+        btnDelete.setVisible(true);
+        btnEdit.setVisible(true);
+        btnAdd.setVisible(true);
+        lblAvailable.setVisible(true);
+        lblCarID.setVisible(true);
+        lblHeader.setVisible(true);
+        lblMake.setVisible(true);
+        lblModel.setVisible(true);
+        lblPrice.setVisible(true);
+        txtPrice.setVisible(true);
+        txtModel.setVisible(true);
+        txtMake.setVisible(true);
+        txtCarID.setVisible(true);
+        cmbAvailable.setVisible(true);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == btnLogout) {
-            dispose();
-            loginPage lp = new loginPage();
-            lp.setVisible(true);
-        } else if (e.getSource() == btnMaintenance) {
-            dispose();
-            vehicleMaintenance cm = new vehicleMaintenance();
-            cm.setVisible(true);
-        } else if (e.getSource() == btnAvailable) {
-            dispose();
-            rentalInvoices cal = new rentalInvoices();
-            cal.setVisible(true);
-        } else if (e.getSource() == btnCustomer) {
-            dispose();
-            bookingReservation ctm = new bookingReservation();
-            ctm.setVisible(true);
-        } else if (e.getSource() == btnCars) {
-            dispose();
-            carRentals car = new carRentals();
-            car.setVisible(true);
-        } else if (e.getSource() == btnCancel) {
+        if (e.getSource() == btnCancel) {
             txtCarID.setText("");
             txtMake.setText("");
             txtModel.setText("");
             txtPrice.setText("");
             JOptionPane.showMessageDialog(null, "Text Fields Cleared!");
         } else if (e.getSource() == btnDelete) {
-            int selectedRow = tblManagement.getSelectedRow();
+            int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {
             int choice = JOptionPane.showConfirmDialog(null, "Do you want to remove this from table?",
                     "Confirmation", JOptionPane.YES_NO_OPTION);
             if (choice == JOptionPane.YES_OPTION) {
-                dfltModel.removeRow(selectedRow);
+                model.removeRow(selectedRow);
                 JOptionPane.showMessageDialog(null, "Car Deleted Successfully!", "Warning", JOptionPane.WARNING_MESSAGE);
                 } else {
                 JOptionPane.showMessageDialog(null, "Operation Canceled.");
             }
             } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to remove.");
+                JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnEdit) {
             String availability = cmbAvailable.getSelectedItem().toString();
-            int selectedRow = tblManagement.getSelectedRow();
-//                    int hourRent = Integer.parseInt(txtHour.getText());
-//            String carModel = txtModel.getText();
-//                    float rentalPrice = 1f;
+            int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {
-//                    manager.updateCars(selectedRow, hourRent, carModel, rentalPrice);
-                dfltModel.setValueAt(
+                model.setValueAt(
                         txtCarID.getText(), selectedRow, 0 );
-                dfltModel.setValueAt(
+                model.setValueAt(
                         txtMake.getText(), selectedRow, 1 );
-                dfltModel.setValueAt(
+                model.setValueAt(
                         txtModel.getText(), selectedRow, 2 );
-                dfltModel.setValueAt (
+                model.setValueAt (
                         txtPrice.getText(), selectedRow, 3 );
-                dfltModel.setValueAt(
+                model.setValueAt(
                         availability, selectedRow, 4 );
                 JOptionPane.showMessageDialog(null, "Car Updated Successfully!");
             } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to edit.");
+                JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnAdd) {
             String carId = txtCarID.getText();
@@ -259,9 +221,8 @@ public class carRentals extends JFrame implements ActionListener{
             String carModel = txtModel.getText();
             String rentalPrice = txtPrice.getText();
             String availability = cmbAvailable.getSelectedItem().toString();
-                    int hourRent = 1;
-//                com.myproject.carrentalsystem.rentalCars car = new com.myproject.carrentalsystem.rentalCars(hourRent, carModel, rentalPrice);
-            dfltModel.addRow(new Object[]{
+            if (!(carId.isEmpty() || brandMake.isEmpty() || carModel.isEmpty() || rentalPrice.isEmpty())) {
+            model.addRow(new Object[]{
                 carId,
                 brandMake,
                 carModel,
@@ -273,7 +234,23 @@ public class carRentals extends JFrame implements ActionListener{
             txtMake.setText("");
             txtModel.setText("");
             txtPrice.setText("");
+            } else {
+                JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Add", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
-    
+        private void loadTableData(){
+            model.setRowCount(0);
+            for(bookingReservation cim : rentalList){
+                model.addRow(new Object[]{
+//                    cim.getCarID(),
+//                    cim.getCustomerID(),
+//                    cim.getCustomerName(),
+//                    cim.getRentFee(),
+//                    cim.getRentHour(),
+//                    cim.getStartDate(),
+//                    cim.getDueDate()
+                });
+            }
+    }
 }

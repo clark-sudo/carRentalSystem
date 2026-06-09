@@ -15,6 +15,54 @@ import java.util.ArrayList;
  * @author hicru
  */
 class JDateChooser {
+    
+    private String carID;
+    private String customerID;
+    private String customerName;
+    private String rentFee;
+    private String rentHour;
+    private String startDate;
+    private String dueDate;
+    
+    public JDateChooser(String carID, String customerID, String customerName, String rentFee,
+            String rentHour, String startDate, String dueDate){
+        this.carID = carID;
+        this.customerID = customerID;
+        this.customerName = customerName;
+        this.rentFee = rentFee;
+        this.rentHour = rentHour;
+        this.startDate = startDate;
+        this.dueDate = dueDate;
+        
+    }
+    
+    public String getCarID(){
+        return carID;
+    }
+    
+    public String getCustomerID(){
+        return customerID;
+    }
+    
+    public String getCustomerName(){
+        return customerName;
+    }
+    
+    public String getRentFee(){
+        return rentFee;
+    }
+    
+    public String getRentHour(){
+        return rentHour;
+    }
+    
+    public String getStartDate(){
+        return startDate;
+    }
+    
+    public String getDueDate(){
+        return dueDate;
+    }
 //    java.util.Date selectedDate = dateChooser.getDate();
 //    public class JDateChooser extends JFrame {
 //
@@ -104,77 +152,77 @@ class JDateChooser {
  *
  * @author Sophia
  */
-public class rentalCars {
-    private int hourRent;
-    private String carModel;
-    private double rentalPrice;
-
-    public rentalCars(int hourRent, String carModel, double rentalPrice) {
-        this.hourRent = hourRent;
-        this.carModel = carModel;
-        this.rentalPrice = rentalPrice;
-    }
-    
-    public int getHourRent() {
-        return hourRent;
-    }
-
-    public String getCarModel() {
-        return carModel;
-    }
-
-    public double getRentalPrice() {
-        return rentalPrice;
-    }
-
-    public void setHourRent(int hourRent) {
-        this.hourRent = hourRent;
-    }
-
-    public void setCarModel(String carModel) {
-        this.carModel = carModel;
-    }
-
-    public void setRentalPrice(double rentalPrice) {
-        this.rentalPrice = rentalPrice;
-    }
-}
-
-//package carrentalsystemtest;
+//public class rentalCars {
+//    private int hourRent;
+//    private String carModel;
+//    private double rentalPrice;
 //
-//import java.util.ArrayList;
+//    public rentalCars(int hourRent, String carModel, double rentalPrice) {
+//        this.hourRent = hourRent;
+//        this.carModel = carModel;
+//        this.rentalPrice = rentalPrice;
+//    }
+//    
+//    public int getHourRent() {
+//        return hourRent;
+//    }
 //
-///**
-// *
-// * @author Sophia
-// */
-public class rentalCarsManager {
-    
-    private ArrayList<rentalCars> carsList = new ArrayList<>();
-
-    public void addCars(rentalCars cars) {
-        carsList.add(cars);
-    }
-
-    public ArrayList<rentalCars> getAllcars() {
-        return carsList;
-    }
-
-    public void deleteCars(int index) {
-        if (index >= 0 && index < carsList.size()) {
-            carsList.remove(index);
-        }
-    }
-
-    public void updateCars(int index, int hourRent, String carModel, float rentalPrice) {
-        if (index >= 0 && index < carsList.size()) {
-            rentalCars car = carsList.get(index);
-            car.setHourRent(hourRent);
-            car.setCarModel(carModel);
-            car.setRentalPrice(rentalPrice);
-        }
-    }
-}
+//    public String getCarModel() {
+//        return carModel;
+//    }
+//
+//    public double getRentalPrice() {
+//        return rentalPrice;
+//    }
+//
+//    public void setHourRent(int hourRent) {
+//        this.hourRent = hourRent;
+//    }
+//
+//    public void setCarModel(String carModel) {
+//        this.carModel = carModel;
+//    }
+//
+//    public void setRentalPrice(double rentalPrice) {
+//        this.rentalPrice = rentalPrice;
+//    }
+//}
+//
+////package carrentalsystemtest;
+////
+////import java.util.ArrayList;
+////
+/////**
+//// *
+//// * @author Sophia
+//// */
+//public class rentalCarsManager {
+//    
+//    private ArrayList<rentalCars> carsList = new ArrayList<>();
+//
+//    public void addCars(rentalCars cars) {
+//        carsList.add(cars);
+//    }
+//
+//    public ArrayList<rentalCars> getAllcars() {
+//        return carsList;
+//    }
+//
+//    public void deleteCars(int index) {
+//        if (index >= 0 && index < carsList.size()) {
+//            carsList.remove(index);
+//        }
+//    }
+//
+//    public void updateCars(int index, int hourRent, String carModel, float rentalPrice) {
+//        if (index >= 0 && index < carsList.size()) {
+//            rentalCars car = carsList.get(index);
+//            car.setHourRent(hourRent);
+//            car.setCarModel(carModel);
+//            car.setRentalPrice(rentalPrice);
+//        }
+//    }
+//}
 
 //package carrentalsystemtest;
 //

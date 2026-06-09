@@ -18,7 +18,7 @@ public class CarRentalSystem {
 //        
 //        if (choice == null) choice = "Normal Screen";
         
-        loginPage lp = new loginPage();
+        homePage lp = new homePage();
         lp.setVisible(true);
     }
 }
