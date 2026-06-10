@@ -21,9 +21,9 @@ import javax.swing.table.DefaultTableModel;
  */
 public class rentalInvoices extends JPanel implements ActionListener{
     
-    private JLabel lblHeader, lblCarID, lblCustomerID, lblCustomer, lblRentFee, lblRentHour, lblDate, lblDueDate;
-    private JButton btnCars, btnCustomer, btnAvailable, btnMaintenance, btnLogout, btnAdd, btnEdit, btnDelete, btnCancel;
-    private JTextField txtCustomerID, txtCustomer, txtRentFee, txtRentHour, txtDate, txtDueDate;
+    private JLabel lblHeader, lblCarID, lblAvailable, lblCustomer, lblRentFee, lblRentHour, lblDate, lblDueDate;
+    private JButton btnAdd, btnEdit, btnDelete, btnCancel;
+    private JTextField txtAvailable, txtCustomer, txtRentFee, txtRentHour, txtDate, txtDueDate;
     private JComboBox<String> cmbCarID;
     protected static final String[] confirmation = {"1", "2"};
     private JPanel panel;
@@ -31,8 +31,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
     private JScrollPane scrollPane;
     private DefaultTableModel model;
     private static final String[] tblColumns = {
-                "Car ID",
-                "Customer ID",
+                "Car",
                 "Customer Name",
                 "Rental Fee",
                 "Rental Hour",
@@ -44,10 +43,9 @@ public class rentalInvoices extends JPanel implements ActionListener{
     
     rentalInvoices() {
         
-        setSize(1370, 730);
         setLayout(null);
         
-        lblHeader = new JLabel("Calendar");
+        lblHeader = new JLabel("Record");
         lblHeader.setFont(new Font("Arial", Font.BOLD, 16));
         lblHeader.setForeground(Color.BLUE);
         lblHeader.setBounds(350, 50, 100, 30);
@@ -58,10 +56,10 @@ public class rentalInvoices extends JPanel implements ActionListener{
         lblCarID.setBounds(400, 130, 100, 40);
         add(lblCarID);
         
-        lblCustomerID = new JLabel("Customer ID ");
-        lblCustomerID.setForeground(Color.BLUE);
-        lblCustomerID.setBounds(400, 190, 100, 40);
-        add(lblCustomerID);
+        lblAvailable = new JLabel("Available ");
+        lblAvailable.setForeground(Color.BLUE);
+        lblAvailable.setBounds(400, 190, 100, 40);
+        add(lblAvailable);
         
         lblCustomer = new JLabel("Customer Name ");
         lblCustomer.setForeground(Color.BLUE);
@@ -92,10 +90,11 @@ public class rentalInvoices extends JPanel implements ActionListener{
         cmbCarID.setBounds(550, 130, 200, 40);
         add(cmbCarID);
         
-        txtCustomerID = new JTextField();
-        txtCustomerID.setBackground(new Color(240, 240, 244));
-        txtCustomerID.setBounds(550, 190, 200, 40);
-        add(txtCustomerID);
+        txtAvailable = new JTextField();
+        txtAvailable.setBackground(new Color(240, 240, 244));
+        txtAvailable.setBounds(550, 190, 200, 40);
+        add(txtAvailable);
+        txtAvailable.setEditable(false);
         
         txtCustomer = new JTextField();
         txtCustomer.setBackground(new Color(240, 240, 244));
@@ -148,6 +147,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
         
         model = new DefaultTableModel(tblColumns, 0);
         table = new JTable(model);
+        loadTableData();
         scrollPane = new JScrollPane(table);
         scrollPane.setBackground(new Color(177, 218, 220));
         scrollPane.setBounds(800, 130, 500, 500);
@@ -170,14 +170,14 @@ public class rentalInvoices extends JPanel implements ActionListener{
         btnAdd.setVisible(false);
         lblCarID.setVisible(false);
         lblCustomer.setVisible(false);
-        lblCustomerID.setVisible(false);
+        lblAvailable.setVisible(false);
         lblDate.setVisible(false);
         lblDueDate.setVisible(false);
         lblHeader.setVisible(false);
         lblRentFee.setVisible(false);
         lblRentHour.setVisible(false);
         txtCustomer.setVisible(false);
-        txtCustomerID.setVisible(false);
+        txtAvailable.setVisible(false);
         txtDate.setVisible(false);
         txtDueDate.setVisible(false);
         txtRentFee.setVisible(false);
@@ -193,14 +193,14 @@ public class rentalInvoices extends JPanel implements ActionListener{
         btnAdd.setVisible(true);
         lblCarID.setVisible(true);
         lblCustomer.setVisible(true);
-        lblCustomerID.setVisible(true);
+        lblAvailable.setVisible(true);
         lblDate.setVisible(true);
         lblDueDate.setVisible(true);
         lblHeader.setVisible(true);
         lblRentFee.setVisible(true);
         lblRentHour.setVisible(true);
         txtCustomer.setVisible(true);
-        txtCustomerID.setVisible(true);
+        txtAvailable.setVisible(true);
         txtDate.setVisible(true);
         txtDueDate.setVisible(true);
         txtRentFee.setVisible(true);
@@ -211,7 +211,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
     @Override
     public void actionPerformed(ActionEvent e) {
          if (e.getSource() == btnCancel) {
-            txtCustomerID.setText("");
+            txtAvailable.setText("");
             txtCustomer.setText("");
             txtRentFee.setText("");
             txtRentHour.setText("");
@@ -230,7 +230,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
                 JOptionPane.showMessageDialog(null, "Operation Canceled.");
             }
             } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to remove.");
+                JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnEdit) {
             String carID = (String) cmbCarID.getSelectedItem();
@@ -239,7 +239,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
                 model.setValueAt(
                         carID, selectedRow, 0 );
                 model.setValueAt(
-                        txtCustomerID.getText(), selectedRow, 1 );
+                        txtAvailable.getText(), selectedRow, 1 );
                 model.setValueAt(
                         txtCustomer.getText(), selectedRow, 2 );
                 model.setValueAt (
@@ -250,28 +250,30 @@ public class rentalInvoices extends JPanel implements ActionListener{
                 model.setValueAt(txtDueDate.getText(), selectedRow, 6 );
                 JOptionPane.showMessageDialog(null, "Transaction Updated Successfully!");
             } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to edit.");
+                JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnAdd) {
-            String carID = cmbCarID.getSelectedItem().toString();
-            String customerID = txtCustomerID.getText();
+            String carId = cmbCarID.getSelectedItem().toString();
+            String customerID = txtAvailable.getText();
             String customerName = txtCustomer.getText();
             String rentFee = txtRentFee.getText();
             String rentHour = txtRentHour.getText();
             String startDateStr = txtDate.getText();
             String dueDateStr = txtDueDate.getText();
-            
+            double fee = 0.0;
             try{
+                fee = Double.parseDouble(rentFee);
                 LocalDate startDate = LocalDate.parse(startDateStr, formatter);
                 LocalDate dueDate = LocalDate.parse(dueDateStr, formatter);
                 
                 if(dueDate.isBefore(startDate)){
-                    JOptionPane.showMessageDialog(this, "Error, due date cannot be before start date.");
+                    JOptionPane.showMessageDialog(this, "Due date cannot be before start date.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
-                }
+                } else if (!(carId.isEmpty() || customerName.isEmpty() || rentFee.isEmpty() )) {
                 
-                JDateChooser cim = new JDateChooser(
-                        carID, 
+                
+                JDateChooser record = new JDateChooser(
+                        carId, 
                         customerID, 
                         customerName, 
                         rentFee,
@@ -279,10 +281,10 @@ public class rentalInvoices extends JPanel implements ActionListener{
                         startDate.format(formatter), 
                         dueDate.format(formatter)
                 );
-                rentalList.add(cim);
+                rentalList.add(record);
                 
                 model.addRow(new Object[]{
-                    carID,
+                    carId,
                     customerID,
                     customerName,
                     rentFee,
@@ -291,29 +293,35 @@ public class rentalInvoices extends JPanel implements ActionListener{
                     dueDate.format(formatter)
                 });
                 
-                txtCustomerID.setText("");
+                txtAvailable.setText("");
                 txtCustomer.setText("");
                 txtRentFee.setText("");
                 txtRentHour.setText("");
                 txtDate.setText("");
                 txtDueDate.setText("");
+            } else {
+                JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Add", JOptionPane.ERROR_MESSAGE);
+            }
             } catch(DateTimeParseException ex){
-                JOptionPane.showMessageDialog(this, "Invalid date format! please use MM/dd/yyyy.");
+                JOptionPane.showMessageDialog(this, "Invalid date format! please use MM/dd/yyyy.", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "Please enter a valid numeric fee.", "Add", JOptionPane.ERROR_MESSAGE);
+                return;
             }
         }
     
 }
         private void loadTableData(){
             model.setRowCount(0);
-            for(JDateChooser cim : rentalList){
+            for(JDateChooser record : rentalList){
                 model.addRow(new Object[]{
-                    cim.getCarID(),
-                    cim.getCustomerID(),
-                    cim.getCustomerName(),
-                    cim.getRentFee(),
-                    cim.getRentHour(),
-                    cim.getStartDate(),
-                    cim.getDueDate()
+                    record.getCarID(),
+                    record.getCustomerID(),
+                    record.getCustomerName(),
+                    record.getRentFee(),
+                    record.getRentHour(),
+                    record.getStartDate(),
+                    record.getDueDate()
                 });
             }
     }

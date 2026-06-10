@@ -8,7 +8,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import javax.swing.*;
 
 /**
@@ -51,7 +50,7 @@ public class homePage extends JFrame implements ActionListener{
         btnCustomer.setBounds(50, 200, 200, 40);
         add(btnCustomer);
         
-        btnAvailable = new JButton("Calendar");
+        btnAvailable = new JButton("Available");
         btnAvailable.setFont(new Font("Arial", Font.BOLD, 15));
         btnAvailable.setBackground(new Color(66, 133, 244));
         btnAvailable.setForeground(Color.white);
@@ -112,16 +111,18 @@ public class homePage extends JFrame implements ActionListener{
             cars.setVisible(false);
             repair.showVehicleMaintenance();
 //            dispose();
-//            vehicleMaintenance cm = new vehicleMaintenance();
+//            carMaintenance cm = new carMaintenance();
             repair.setVisible(true);
         } else if (e.getSource() == btnAvailable) {
             repair.setVisible(false);
             customers.setVisible(false);
             cars.setVisible(false);
             availables.showRentalInvoice();
-//            dispose();
-//            rentalInvoices cal = new rentalInvoices();
             availables.setVisible(true);
+//=======
+//            dispose();
+//            calendarManagement cal = new calendarManagement();
+//            cal.setVisible(true);
         } else if (e.getSource() == btnCustomer) {
             repair.setVisible(false);
             availables.setVisible(false);

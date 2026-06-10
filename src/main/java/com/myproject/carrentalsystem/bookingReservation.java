@@ -33,6 +33,7 @@ public class bookingReservation extends JPanel implements ActionListener{
             "Email Address"
         };
     private JPanel panel;
+    private static ArrayList<customerManager> rentalList = new ArrayList<>();
     
     bookingReservation() {
         
@@ -120,6 +121,7 @@ public class bookingReservation extends JPanel implements ActionListener{
         
         model = new DefaultTableModel(tblColumns, 0);
         table = new JTable(model);
+        loadTableData();
         scrollPane = new JScrollPane(table);
         scrollPane.setBackground(new Color(177, 218, 220));
         scrollPane.setBounds(800, 130, 500, 500);
@@ -193,7 +195,7 @@ public class bookingReservation extends JPanel implements ActionListener{
                 JOptionPane.showMessageDialog(null, "Operation Canceled.");
             }
             } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to remove.");
+                JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnEdit) {
             int selectedRow = table.getSelectedRow();
@@ -210,22 +212,32 @@ public class bookingReservation extends JPanel implements ActionListener{
                         txtEmail.getText(), selectedRow, 4 );
                 JOptionPane.showMessageDialog(null, "Customer Updated Successfully!");
             } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to edit.");
+                JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnAdd) {
-            String carId = txtCustomerID.getText();
-            String brandMake = txtCustomer.getText();
-            String carModel = txtNumber.getText();
-            String rentalPrice = txaAddress.getText();
-            String availability = txtEmail.getText();
-                    int hourRent = 1;
-            if (!(carId.isEmpty() || brandMake.isEmpty() || carModel.isEmpty() || rentalPrice.isEmpty())) {
+            String customerId = txtCustomerID.getText();
+            String customerName = txtCustomer.getText();
+            String contactNumber = txtNumber.getText();
+            String address = txaAddress.getText();
+            String emailAddress = txtEmail.getText();
+            
+            if (!(customerId.isEmpty() || customerName.isEmpty() || contactNumber.isEmpty() || address.isEmpty())) {
+                
+                customerManager record = new customerManager(
+                        customerId,
+                        customerName,
+                        contactNumber,
+                        address,
+                        emailAddress
+                        );
+                rentalList.add(record);
+                
             model.addRow(new Object[]{
-                carId,
-                brandMake,
-                carModel,
-                rentalPrice,
-                availability
+                customerId,
+                customerName,
+                contactNumber,
+                address,
+                emailAddress
             });
             JOptionPane.showMessageDialog(null, "Customer Added Successfully!");
            txtCustomerID.setText("");
@@ -238,5 +250,17 @@ public class bookingReservation extends JPanel implements ActionListener{
             }
         }
     }
-    
+    private void loadTableData() {
+        model.setRowCount(0);
+        
+        for (customerManager record : rentalList) {
+        model.addRow(new Object[]{
+            record.getCustomerID(),
+            record.getCustomerName(),
+            record.getCustomerNumber(),
+            record.getAddress(),
+            record.getEmailAddress()
+        });
+    }
+}
 }

@@ -8,10 +8,13 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author hicru
@@ -20,15 +23,23 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
     
     private JLabel lblHeader, lblCarID, lblCarParts, lblQuantity, lblUnitPrice, lblDate;
     private JButton btnAdd, btnEdit, btnDelete, btnCancel;
-    private JTextField txtCarParts, txtQuantity, txtUnitPrice, txtDate;
+    private JTextField txtQuantity, txtUnitPrice, txtDate;
     private JComboBox<String> cmbCarID, cmbType;
-//    protected static final String[] confirmation = {"1", "2"};
+    protected static final String[] tblColumns = {
+            "Car ID",
+            "Maintenance Type",
+            "Description",
+            "Total Cost",
+            "Date"
+        };
     private JScrollPane scrollPane;
     private JTable table;
     private DefaultTableModel model;
+    protected static final String[] serviceTypes = {"Routine Checkup", "Interim Car Service Intervals", "Full Car Service Intervals", "Major Car Service Intervals", "Oil Change", "Body Repair", "Others (State in the description)"};
     protected static final String[] confirmation = {"TOYOTA Innova", "TOYOTA Rush", "TOYOTA Veloz", "TOYOTA Avanza" , "TOYOTA Vios", "TOYOTA Wigo1", "TOYOTA Wigo2", "HONDA BRV", "MITSUBISHI Mirage", "SUZUKI Espresso", "NISSAN NV350"};
     private JPanel panel;
-    private LinkedList<MaintenanceRecord> maintenanceHistory = new LinkedList<>();
+    private static ArrayList<repairManager> maintenanceHistory = new ArrayList<>();
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
     
     vehicleMaintenance() {
         
@@ -64,8 +75,7 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         lblDate.setForeground(Color.BLUE);
         lblDate.setBounds(400, 370, 100, 40);
         add(lblDate);
-        
-        String[] serviceTypes = {"Routine Checkup", "Interim Car Service Intervals", "Full Car Service Intervals", "Major Car Service Intervals", "Oil Change", "Body Repair", "Others (State in the description)"};
+
         cmbType = new JComboBox<>(serviceTypes);
         cmbType.setBounds(550, 190, 200, 40);
         add(cmbType);
@@ -73,11 +83,6 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         cmbCarID = new JComboBox<>(confirmation);
         cmbCarID.setBounds(550, 130, 200, 40);
         add(cmbCarID);
-        
-        txtCarParts = new JTextField();
-        txtCarParts.setBackground(new Color(240, 240, 244));
-        txtCarParts.setBounds(550, 190, 200, 40);
-        add(txtCarParts);
         
         txtQuantity = new JTextField();
         txtQuantity.setBackground(new Color(240, 240, 244));
@@ -118,16 +123,9 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         btnCancel.setBounds(650, 510, 100, 40);
         add(btnCancel);
         
-        model = new DefaultTableModel();
-        model.setColumnIdentifiers(new String[] {
-            "Car ID",
-            "Car Parts",
-            "Quantity",
-            "Total Amount",
-            "Date"
-        });
-
+        model = new DefaultTableModel(tblColumns, 0);
         table = new JTable(model);
+        MaintenanceRecord() ;
         scrollPane = new JScrollPane(table);
         scrollPane.setBackground(new Color(177, 218, 220));
         scrollPane.setBounds(800, 130, 500, 500);
@@ -154,7 +152,6 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         lblHeader.setVisible(false);
         lblQuantity.setVisible(false);
         lblCarParts.setVisible(false);
-        txtCarParts.setVisible(false);
         txtDate.setVisible(false);
         txtQuantity.setVisible(false);
         cmbCarID.setVisible(false);
@@ -174,7 +171,6 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         lblHeader.setVisible(true);
         lblQuantity.setVisible(true);
         lblCarParts.setVisible(true);
-        txtCarParts.setVisible(true);
         txtDate.setVisible(true);
         txtQuantity.setVisible(true);
         cmbCarID.setVisible(true);
@@ -185,7 +181,6 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
     @Override
     public void actionPerformed(ActionEvent e) {
          if (e.getSource() == btnCancel) {
-            txtCarParts.setText("");
             txtQuantity.setText("");
             txtUnitPrice.setText("");
             txtDate.setText("");
@@ -202,16 +197,17 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
                 JOptionPane.showMessageDialog(null, "Operation Canceled.");
             }
             } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to remove.");
+                JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnEdit) {
             String carID = cmbCarID.getSelectedItem().toString();
+            String carService = cmbType.getSelectedItem().toString();
             int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {
                 model.setValueAt(
                         carID, selectedRow, 0 );
                 model.setValueAt(
-                        txtCarParts.getText(), selectedRow, 1 );
+                        carService, selectedRow, 1 );
                 model.setValueAt(
                         txtQuantity.getText(), selectedRow, 2 );
                 model.setValueAt (
@@ -220,53 +216,59 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
                         txtDate.getText(), selectedRow, 4 );
                 JOptionPane.showMessageDialog(null, "Car Maintenance Updated Successfully!");
             } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to edit.");
+                JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnAdd) {
             String carId = cmbCarID.getSelectedItem().toString();
             String type = cmbType.getSelectedItem().toString();
-            String brandMake = txtCarParts.getText();
             String desc = txtQuantity.getText();
             String costStr = txtUnitPrice.getText();
-            String date = txtDate.getText();
-                    int hourRent = 1;
-
+            String dateStr = txtDate.getText();
             double cost = 0.0;
             try {
                 cost = Double.parseDouble(costStr);
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(null, "Please enter a valid numeric cost.");
-                return;
-            }
-
-            MaintenanceRecord record = new MaintenanceRecord(carId, type, desc, cost, date);
+                LocalDate date = LocalDate.parse(dateStr, formatter);
+                
+            if (!(type.isEmpty() || desc.isEmpty() || costStr.isEmpty() )) {
+            
+            repairManager record = new repairManager(
+                    carId, 
+                    type, 
+                    desc, 
+                    cost, 
+                    date.format(formatter)
+            );
             maintenanceHistory.add(record);
+            
             model.addRow(new Object[]{
                 carId,
-                brandMake,
+                type,
                 desc,
                 cost,
                 date
             });
-            JOptionPane.showMessageDialog(null, "Car Maintenance Added Successfully!");
-            txtCarParts.setText("");
-            txtQuantity.setText("");
-            txtUnitPrice.setText("");
-            txtDate.setText("");
+            } else {
+                JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Add", JOptionPane.ERROR_MESSAGE);
+            }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "Please enter a valid numeric cost.", "Add", JOptionPane.ERROR_MESSAGE);
+                return;
+            } catch (DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(null, "Invalid date format! please use MM/dd/yyyy.", "Add", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
-    
+    private void MaintenanceRecord() {
+    model.setRowCount(0);
+
+    for(repairManager record : maintenanceHistory) {
+        model.addRow(new Object[]{
+        record.getCarID(),
+        record.getCustomerID(),
+        record.getCustomerName(),
+        record.getRentFee(),
+        record.getRentHour()
+        });
+    }
+    }
 }
-
-    class MaintenanceRecord {
-    String carId, type, description, date;
-    double cost;
-
-    public MaintenanceRecord(String carId, String type, String description, double cost, String date) {
-        this.carId = carId;
-        this.type = type;
-        this.description = description;
-        this.cost = cost;
-        this.date = date;
-        }
-    }

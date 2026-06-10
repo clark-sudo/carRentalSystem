@@ -34,7 +34,7 @@ public class carRentals extends JPanel implements ActionListener{
             "Available"
         };
     private JPanel panel;
-    private static ArrayList<bookingReservation> rentalList = new ArrayList<>();
+    private static ArrayList<carManager> rentalList = new ArrayList<>();
     
     carRentals() {
         
@@ -123,6 +123,7 @@ public class carRentals extends JPanel implements ActionListener{
         
         model = new DefaultTableModel(tblColumns, 0);
         table = new JTable(model);
+        loadTableData() ;
         scrollPane = new JScrollPane(table);
         scrollPane.setBackground(new Color(177, 218, 220));
         scrollPane.setBounds(800, 130, 500, 500);
@@ -221,7 +222,21 @@ public class carRentals extends JPanel implements ActionListener{
             String carModel = txtModel.getText();
             String rentalPrice = txtPrice.getText();
             String availability = cmbAvailable.getSelectedItem().toString();
+                double cost = 0.0;
+            try {
+                cost = Double.parseDouble(rentalPrice);
+                        
             if (!(carId.isEmpty() || brandMake.isEmpty() || carModel.isEmpty() || rentalPrice.isEmpty())) {
+                
+                carManager record = new carManager(
+                        carId,
+                        brandMake,
+                        carModel,
+                        cost,
+                        availability
+                );
+                rentalList.add(record);
+                
             model.addRow(new Object[]{
                 carId,
                 brandMake,
@@ -237,19 +252,23 @@ public class carRentals extends JPanel implements ActionListener{
             } else {
                 JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Add", JOptionPane.ERROR_MESSAGE);
             }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "Please enter a valid numeric rent Price.", "Add", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
         }
     }
         private void loadTableData(){
             model.setRowCount(0);
-            for(bookingReservation cim : rentalList){
+            
+            for(carManager record : rentalList){
                 model.addRow(new Object[]{
-//                    cim.getCarID(),
-//                    cim.getCustomerID(),
-//                    cim.getCustomerName(),
-//                    cim.getRentFee(),
-//                    cim.getRentHour(),
-//                    cim.getStartDate(),
-//                    cim.getDueDate()
+                    record.getCarID(),
+                    record.getCustomerID(),
+                    record.getCustomerName(),
+                    record.getRentFee(),
+                    record.getRentHour()
                 });
             }
     }
