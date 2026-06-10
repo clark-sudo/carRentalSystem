@@ -4,6 +4,11 @@
  */
 package com.myproject.carrentalsystem;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,7 +23,7 @@ import java.util.LinkedList;
  */
 public class vehicleMaintenance extends JFrame implements ActionListener{
 
-    private JLabel lblApp, lblHeader, lblCarID, lblType, lblDescription, lblCost, lblDate, lblDueDate; 
+    private JLabel lblApp, lblHeader, lblCarID, lblType, lblDescription, lblCost, lblDate; 
     private JButton btnCars, btnCustomer, btnAvailable, btnMaintenance, btnLogout, btnAdd, btnEdit, btnDelete, btnCancel;
     private JTextField txtDescription, txtCost, txtDate; 
     private JComboBox<String> cmbCarID, cmbType;
@@ -34,6 +39,20 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
     
 
     private LinkedList<MaintenanceRecord> maintenanceHistory = new LinkedList<>();
+    
+        Connection connectToDatabase() {
+        try {
+            
+            String url = "jdbc:mysql://localhost:3306/carrental_db";
+            String databaseUser = "root"; 
+            String databasePassword = ""; 
+
+            return DriverManager.getConnection(url, databaseUser, databasePassword);
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Database Connection Failed: " + ex.getMessage());
+            return null;
+        }
+    }
 
     vehicleMaintenance() {
         this("Normal screen");
@@ -169,7 +188,7 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
             "Car ID",
             "Maintenance Type",
             "Description",
-            "Total Cost",
+            "Cost",
             "Date"
         });
 
@@ -240,17 +259,69 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         } else if (e.getSource() == btnEdit) {
             String carID = cmbCarID.getSelectedItem().toString();
             int selectedRow = tblManagement.getSelectedRow();
+            
             if (selectedRow != -1) {
-//                    manager.updateCars(selectedRow, hourRent, carModel, rentalPrice);
-                dfltModel.setValueAt(
-                        carID, selectedRow, 0 );
-                dfltModel.setValueAt(
-                        txtDescription.getText(), selectedRow, 2 );
-                dfltModel.setValueAt (
-                        txtCost.getText(), selectedRow, 3 );
-                dfltModel.setValueAt(
-                        txtDate.getText(), selectedRow, 4 );
-                JOptionPane.showMessageDialog(null, "Car Maintenance Updated Successfully!");
+                String oldCarID = dfltModel.getValueAt(selectedRow, 0).toString();
+                String oldType = dfltModel.getValueAt(selectedRow, 1).toString();
+                String oldDesc = dfltModel.getValueAt(selectedRow, 2).toString();
+                String oldCost = dfltModel.getValueAt(selectedRow, 3).toString();
+                String oldDate = dfltModel.getValueAt(selectedRow, 4).toString();
+
+                String newCarID = cmbCarID.getSelectedItem().toString();
+                String newType = cmbType.getSelectedItem().toString();
+                String newDesc = txtDescription.getText();
+                String newCostStr = txtCost.getText();
+                String newDate = txtDate.getText();
+
+                double newCost = 0.0;
+                try {
+                    newCost = Double.parseDouble(newCostStr);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Please enter a valid numeric cost.");
+                    return;
+                }
+
+                Connection conn = connectToDatabase();
+                if (conn != null) {
+                    String sql = "UPDATE vehicle_maintenance SET car_id = ?, maintenance_type = ?, description = ?, cost = ?, date = ? " +
+                                 "WHERE car_id = ? AND maintenance_type = ? AND description = ? AND cost = ? AND date = ?";
+                    try {
+                        PreparedStatement pstmt = conn.prepareStatement(sql);
+                        
+                        pstmt.setString(1, newCarID);
+                        pstmt.setString(2, newType);
+                        pstmt.setString(3, newDesc);
+                        pstmt.setDouble(4, newCost);
+                        pstmt.setString(5, newDate);
+                        
+                        pstmt.setString(6, oldCarID);
+                        pstmt.setString(7, oldType);
+                        pstmt.setString(8, oldDesc);
+                        pstmt.setDouble(9, Double.parseDouble(oldCost));
+                        pstmt.setString(10, oldDate);
+                        
+                        pstmt.executeUpdate();
+                        pstmt.close();
+                        conn.close();
+                        
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(null, "Database Update Error: " + ex.getMessage());
+                        return; 
+                    }
+                }
+
+                dfltModel.setValueAt(newCarID, selectedRow, 0);   
+                dfltModel.setValueAt(newType, selectedRow, 1);    
+                dfltModel.setValueAt(newDesc, selectedRow, 2);     
+                dfltModel.setValueAt(newCostStr, selectedRow, 3); 
+                dfltModel.setValueAt(newDate, selectedRow, 4);    
+                
+                JOptionPane.showMessageDialog(null, "Car Maintenance Updated in Database and Table Successfully!");
+                
+                txtDescription.setText("");
+                txtCost.setText("");
+                txtDate.setText("");
+                
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.");
             }
@@ -279,8 +350,32 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
                 cost,
                 date
             });
+            
+            Connection conn = connectToDatabase();
+            if (conn != null) {
+                String sql = "INSERT INTO vehicle_maintenance (car_id, maintenance_type, description, cost, date) VALUES (?, ?, ?, ?, ?)";
+                
+                try {
+                    PreparedStatement pstmt = conn.prepareStatement(sql);
+                    
+                    pstmt.setString(1, carId);
+                    pstmt.setString(2, type);
+                    pstmt.setString(3, desc);
+                    pstmt.setDouble(4, cost);
+                    pstmt.setString(5, date);
+                    
+                    pstmt.executeUpdate();
+                    
+                    pstmt.close();
+                    conn.close();
+                    
+                    JOptionPane.showMessageDialog(null, "Car Maintenance Added and Saved to Database Successfully!");
+                    
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(null, "SQL Error: " + ex.getMessage());
+                }
+            }
 
-            JOptionPane.showMessageDialog(null, "Car Maintenance Added Successfully!");
             txtDescription.setText("");
             txtCost.setText("");
             txtDate.setText("");
