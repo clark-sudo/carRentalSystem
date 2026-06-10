@@ -27,9 +27,10 @@ public class loginPage extends JFrame implements ActionListener{
     loginPage() {
         setTitle("Car Rental");
         getContentPane().setBackground(new Color(20, 80, 180));
-        setSize(650, 350);
+        setSize(650, 450);
         setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
         
         lblHeader = new JLabel("Car Rental App");
         lblHeader.setForeground(Color.white);

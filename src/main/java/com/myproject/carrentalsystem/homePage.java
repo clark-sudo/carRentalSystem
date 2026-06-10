@@ -120,9 +120,9 @@ public class homePage extends JFrame implements ActionListener{
             availables.showRentalInvoice();
             availables.setVisible(true);
 //=======
-//            dispose();
-//            calendarManagement cal = new calendarManagement();
-//            cal.setVisible(true);
+            dispose();
+            calendarManagement cal = new calendarManagement();
+            cal.setVisible(true);
         } else if (e.getSource() == btnCustomer) {
             repair.setVisible(false);
             availables.setVisible(false);

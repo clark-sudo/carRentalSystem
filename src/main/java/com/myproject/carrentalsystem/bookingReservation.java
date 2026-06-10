@@ -235,8 +235,16 @@ public class bookingReservation extends JPanel implements ActionListener{
                 JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnEdit) {
+            String customerId = txtCustomerID.getText();
+            String customerName = txtCustomer.getText();
+            String number = txtNumber.getText();
+            String address = txaAddress.getText();
+            String email = txtEmail.getText();
             int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {
+                
+            if (!(customerId.isEmpty() || customerName.isEmpty() || number.isEmpty() || address.isEmpty())) {
+                
                 model.setValueAt(
                         txtCustomerID.getText(), selectedRow, 0 );
                 model.setValueAt(
@@ -296,6 +304,9 @@ public class bookingReservation extends JPanel implements ActionListener{
                             null,
                             "Error updating customer!");
                 }
+                } else {
+                JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Update", JOptionPane.ERROR_MESSAGE);
+            }
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             }

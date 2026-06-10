@@ -194,9 +194,9 @@ public class carRentals extends JPanel implements ActionListener{
             int choice = JOptionPane.showConfirmDialog(null, "Do you want to remove this from table?",
                     "Confirmation", JOptionPane.YES_NO_OPTION);
             if (choice == JOptionPane.YES_OPTION) {
+                
                     try {
 
-                        // get Car ID from selected row (IMPORTANT: do NOT use ArrayList)
                         String carID = model.getValueAt(selectedRow, 0).toString();
 
                         Connection con = DBConnection.getConnection();
@@ -237,8 +237,7 @@ public class carRentals extends JPanel implements ActionListener{
             if (selectedRow != -1) {
 
                 try {
-
-                    // GET selected Car ID from table (DO NOT allow edit)
+                    
                     String carID = model.getValueAt(selectedRow, 0).toString();
 
                     Connection con = DBConnection.getConnection();
@@ -266,7 +265,7 @@ public class carRentals extends JPanel implements ActionListener{
 
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "Error updating car!");
+                    JOptionPane.showMessageDialog(null, "Error updating car!", "Update", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
@@ -367,7 +366,9 @@ public class carRentals extends JPanel implements ActionListener{
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(
                         null,
-                        "Error saving car!"
+                        "Error saving car!",
+                        "Add",
+                        JOptionPane.ERROR_MESSAGE
                 );
             }
         }

@@ -27,7 +27,7 @@ public class calendarManagement extends JFrame implements ActionListener {
     private JLabel lblHeader, lblCarID, lblCustomerID, lblCustomer, lblRentFee, lblRentHour, lblDate, lblDueDate;
     private JButton btnAdd, btnUpdate, btnDelete, btnCancel;
     private JTextField txtCustomer, txtRentFee, txtRentHour, txtDate, txtDueDate;
-    private JComboBox<String> cmbCarID, cmbCustomerID;
+    private JComboBox<String> cmbCarID, cmbAvailable;
     private JTable tblManagement;
     private JScrollPane spTable;
     private DefaultTableModel model;
@@ -86,9 +86,9 @@ public class calendarManagement extends JFrame implements ActionListener {
         add(cmbCarID);
         loadCarIDs();
 
-        cmbCustomerID = new JComboBox<>();
-        cmbCustomerID.setBounds(250, 190, 200, 40);
-        add(cmbCustomerID);
+        cmbAvailable = new JComboBox<>();
+        cmbAvailable.setBounds(250, 190, 200, 40);
+        add(cmbAvailable);
         loadCustomerIDs();
 
         txtCustomer = new JTextField();
@@ -154,7 +154,7 @@ public class calendarManagement extends JFrame implements ActionListener {
         btnDelete.addActionListener(this);
         btnCancel.addActionListener(this);
         cmbCarID.addActionListener(this);
-        cmbCustomerID.addActionListener(this);
+        cmbAvailable.addActionListener(this);
 
         updateFieldStatus();
     }
@@ -218,18 +218,17 @@ public class calendarManagement extends JFrame implements ActionListener {
             int selectedRow = tblManagement.getSelectedRow();
             if (selectedRow != -1) {
 
-                // First click on Edit — populate fields from selected row
                 if (!isEditing) {
                     isEditing = true;
                     cmbCarID.setSelectedItem(model.getValueAt(selectedRow, 0));
-                    cmbCustomerID.setSelectedItem(model.getValueAt(selectedRow, 1));
+                    cmbAvailable.setSelectedItem(model.getValueAt(selectedRow, 1));
                     txtCustomer.setText(model.getValueAt(selectedRow, 2).toString());
                     txtRentFee.setText(model.getValueAt(selectedRow, 3).toString());
                     txtRentHour.setText(model.getValueAt(selectedRow, 4).toString());
                     txtDate.setText(model.getValueAt(selectedRow, 5).toString());
                     txtDueDate.setText(model.getValueAt(selectedRow, 6).toString());
-                    // Enable all fields so user can make changes
-                    cmbCustomerID.setEnabled(true);
+                    
+                    cmbAvailable.setEnabled(true);
                     txtCustomer.setEnabled(true);
                     txtRentFee.setEnabled(true);
                     txtRentHour.setEnabled(true);
@@ -248,9 +247,8 @@ public class calendarManagement extends JFrame implements ActionListener {
 
                     try {
                         String carID = cmbCarID.getSelectedItem().toString();
-                        String customerID = cmbCustomerID.getSelectedItem().toString();
+                        String customerID = cmbAvailable.getSelectedItem().toString();
 
-                        // Parse the edited dates
                         LocalDate startDate = LocalDate.parse(txtDate.getText().trim(), formatter);
                         LocalDate dueDate = LocalDate.parse(txtDueDate.getText().trim(), formatter);
 
@@ -258,8 +256,7 @@ public class calendarManagement extends JFrame implements ActionListener {
                             JOptionPane.showMessageDialog(this, "Error: due date cannot be before start date.");
                             return;
                         }
-
-                        // Recalculate the price by instantiating a temporary CalendarInMemory object
+                        
                         CalendarInMemory updatedCim = new CalendarInMemory(
                                 carID,
                                 customerID,
@@ -271,11 +268,10 @@ public class calendarManagement extends JFrame implements ActionListener {
                         );
 
                         // Parse the freshly calculated total price
-                        double newTotalPrice = Double.parseDouble(updatedCim.getTotalPrice().replace(",", ""));
+//                        double newTotalPrice = Double.parseDouble(updatedCim.getTotalPrice().replace(",", ""));
 
                         Connection con = DBConnection.getConnection();
-
-                        // 1. ADDED total_price=? TO THE SQL UPDATE STRING
+                        
                         String sql = "UPDATE rentals SET customer_id=?, customer_name=?, rental_fee=?, "
                                 + "rental_hour=?, start_date=?, due_date=?, total_price=? WHERE car_id=?";
 
@@ -284,8 +280,7 @@ public class calendarManagement extends JFrame implements ActionListener {
                         pst.setString(1, customerID);
                         pst.setString(2, txtCustomer.getText());
                         pst.setDouble(3, Double.parseDouble(txtRentFee.getText()));
-
-                        // Handle the empty hour bug safely
+                        
                         if (rentHourInput.isEmpty()) {
                             pst.setNull(4, java.sql.Types.INTEGER);
                         } else {
@@ -294,12 +289,11 @@ public class calendarManagement extends JFrame implements ActionListener {
 
                         pst.setDate(5, java.sql.Date.valueOf(startDate));
                         pst.setDate(6, java.sql.Date.valueOf(dueDate));
-                        pst.setDouble(7, newTotalPrice); // 2. SET THE NEW TOTAL PRICE HERE
+                        
                         pst.setString(8, carID);
 
                         pst.executeUpdate();
-
-                        // 3. UPDATE THE JTABLE COLUMNS (Including total price at column index 7)
+                        
                         model.setValueAt(carID, selectedRow, 0);
                         model.setValueAt(customerID, selectedRow, 1);
                         model.setValueAt(txtCustomer.getText(), selectedRow, 2);
@@ -307,14 +301,13 @@ public class calendarManagement extends JFrame implements ActionListener {
                         model.setValueAt(rentHourInput, selectedRow, 4);
                         model.setValueAt(txtDate.getText(), selectedRow, 5);
                         model.setValueAt(txtDueDate.getText(), selectedRow, 6);
-                        model.setValueAt(updatedCim.getTotalPrice(), selectedRow, 7); // Sets the new formatted total
+//                        model.setValueAt(updatedCim.getTotalPrice(), selectedRow, 7); 
 
                         JOptionPane.showMessageDialog(null, "Record Updated Successfully!");
-
-                        // Reset editing state and fields
+                        
                         isEditing = false;
                         tblManagement.clearSelection();
-                        cmbCustomerID.setSelectedIndex(0);
+                        cmbAvailable.setSelectedIndex(0);
                         txtCustomer.setText("");
                         txtRentFee.setText("");
                         txtRentHour.setText("");
@@ -336,7 +329,7 @@ public class calendarManagement extends JFrame implements ActionListener {
 
         } else if (e.getSource() == btnAdd) {
             String carID = cmbCarID.getSelectedItem().toString();
-            String customerID = cmbCustomerID.getSelectedItem().toString();
+            String customerID = cmbAvailable.getSelectedItem().toString();
             String customerName = txtCustomer.getText();
             String rentFee = txtRentFee.getText();
             String rentHour = txtRentHour.getText().trim();
@@ -399,8 +392,8 @@ public class calendarManagement extends JFrame implements ActionListener {
                     pst.setDate(7, java.sql.Date.valueOf(dueDate));
 
                     // Safe numeric formatting for database storage
-                    double total = Double.parseDouble(cim.getTotalPrice().replace(",", ""));
-                    pst.setDouble(8, total);
+//                    double total = Double.parseDouble(cim.getTotalPrice().replace(",", ""));
+//                    pst.setDouble(8, total);
 
                     int rowsInserted = pst.executeUpdate();
 
@@ -418,12 +411,12 @@ public class calendarManagement extends JFrame implements ActionListener {
                 }
 
                 // Update in-memory collections and UI elements only if DB save succeeded
-                for (CarInMemory car : carRentals.carList) {
-                    if (car.getCarID().equals(carID)) {
-                        car.setAvailability("No");
-                        break;
-                    }
-                }
+//                for (CarInMemory car : carRentals.carList) {
+//                    if (car.getCarID().equals(carID)) {
+//                        car.setAvailability("No");
+//                        break;
+//                    }
+//                }
 
                 model.addRow(new Object[]{
                     carID,
@@ -433,11 +426,11 @@ public class calendarManagement extends JFrame implements ActionListener {
                     rentHour,
                     startDate.format(formatter),
                     dueDate.format(formatter),
-                    cim.getTotalPrice()
+//                    cim.getTotalPrice()
                 });
 
                 // Clear input controls for next input session
-                cmbCustomerID.setSelectedIndex(0);
+                cmbAvailable.setSelectedIndex(0);
                 txtCustomer.setText("");
                 txtRentFee.setText("");
                 txtRentHour.setText("");
@@ -453,7 +446,7 @@ public class calendarManagement extends JFrame implements ActionListener {
             if (!isEditing) {
                 updateFieldStatus();
             }
-        } else if (e.getSource() == cmbCustomerID) {
+        } else if (e.getSource() == cmbAvailable) {
             updateCustomerInfo();
         }
     }
@@ -520,7 +513,7 @@ public class calendarManagement extends JFrame implements ActionListener {
 
     private void loadCustomerIDs() {
 
-        cmbCustomerID.removeAllItems();
+        cmbAvailable.removeAllItems();
 
         try {
 
@@ -535,7 +528,7 @@ public class calendarManagement extends JFrame implements ActionListener {
 
             while (rs.next()) {
 
-                cmbCustomerID.addItem(
+                cmbAvailable.addItem(
                         rs.getString("customer_id")
                 );
             }
@@ -587,7 +580,7 @@ public class calendarManagement extends JFrame implements ActionListener {
                 boolean available
                         = availability.equalsIgnoreCase("Yes");
 
-                cmbCustomerID.setEnabled(available);
+                cmbAvailable.setEnabled(available);
                 txtCustomer.setEnabled(available);
                 txtRentFee.setEnabled(available);
                 txtRentHour.setEnabled(available);
@@ -611,7 +604,7 @@ public class calendarManagement extends JFrame implements ActionListener {
     private void updateCustomerInfo() {
 
         String selectedCustomerID
-                = (String) cmbCustomerID.getSelectedItem();
+                = (String) cmbAvailable.getSelectedItem();
 
         if (selectedCustomerID == null) {
             return;
