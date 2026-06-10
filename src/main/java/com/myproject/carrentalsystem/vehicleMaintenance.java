@@ -286,22 +286,22 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
                     String sql = "UPDATE vehicle_maintenance SET car_id = ?, maintenance_type = ?, description = ?, cost = ?, date = ? " +
                                  "WHERE car_id = ? AND maintenance_type = ? AND description = ? AND cost = ? AND date = ?";
                     try {
-                        PreparedStatement pstmt = conn.prepareStatement(sql);
+                        PreparedStatement pst = conn.prepareStatement(sql);
                         
-                        pstmt.setString(1, newCarID);
-                        pstmt.setString(2, newType);
-                        pstmt.setString(3, newDesc);
-                        pstmt.setDouble(4, newCost);
-                        pstmt.setString(5, newDate);
+                        pst.setString(1, newCarID);
+                        pst.setString(2, newType);
+                        pst.setString(3, newDesc);
+                        pst.setDouble(4, newCost);
+                        pst.setString(5, newDate);
                         
-                        pstmt.setString(6, oldCarID);
-                        pstmt.setString(7, oldType);
-                        pstmt.setString(8, oldDesc);
-                        pstmt.setDouble(9, Double.parseDouble(oldCost));
-                        pstmt.setString(10, oldDate);
+                        pst.setString(6, oldCarID);
+                        pst.setString(7, oldType);
+                        pst.setString(8, oldDesc);
+                        pst.setDouble(9, Double.parseDouble(oldCost));
+                        pst.setString(10, oldDate);
                         
-                        pstmt.executeUpdate();
-                        pstmt.close();
+                        pst.executeUpdate();
+                        pst.close();
                         conn.close();
                         
                     } catch (SQLException ex) {
@@ -356,17 +356,17 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
                 String sql = "INSERT INTO vehicle_maintenance (car_id, maintenance_type, description, cost, date) VALUES (?, ?, ?, ?, ?)";
                 
                 try {
-                    PreparedStatement pstmt = conn.prepareStatement(sql);
+                    PreparedStatement pst = conn.prepareStatement(sql);
                     
-                    pstmt.setString(1, carId);
-                    pstmt.setString(2, type);
-                    pstmt.setString(3, desc);
-                    pstmt.setDouble(4, cost);
-                    pstmt.setString(5, date);
+                    pst.setString(1, carId);
+                    pst.setString(2, type);
+                    pst.setString(3, desc);
+                    pst.setDouble(4, cost);
+                    pst.setString(5, date);
                     
-                    pstmt.executeUpdate();
+                    pst.executeUpdate();
                     
-                    pstmt.close();
+                    pst.close();
                     conn.close();
                     
                     JOptionPane.showMessageDialog(null, "Car Maintenance Added and Saved to Database Successfully!");
