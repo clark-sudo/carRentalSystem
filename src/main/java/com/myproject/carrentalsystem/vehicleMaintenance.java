@@ -4,6 +4,11 @@
  */
 package com.myproject.carrentalsystem;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -23,7 +28,7 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
     
     private JLabel lblHeader, lblCarID, lblCarParts, lblQuantity, lblUnitPrice, lblDate;
     private JButton btnAdd, btnEdit, btnDelete, btnCancel;
-    private JTextField txtQuantity, txtUnitPrice, txtDate;
+    private JTextField txtDescription, txtCost, txtDate;
     private JComboBox<String> cmbCarID, cmbType;
     protected static final String[] tblColumns = {
             "Car ID",
@@ -41,6 +46,20 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
     private static ArrayList<repairManager> maintenanceHistory = new ArrayList<>();
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
     
+        Connection connectToDatabase() {
+        try {
+            
+            String url = "jdbc:mysql://localhost:3306/carrental_db";
+            String databaseUser = "root"; 
+            String databasePassword = ""; 
+
+            return DriverManager.getConnection(url, databaseUser, databasePassword);
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Database Connection Failed: " + ex.getMessage());
+            return null;
+        }
+    }
+        
     vehicleMaintenance() {
         
         setLayout(null);
@@ -84,15 +103,15 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         cmbCarID.setBounds(550, 130, 200, 40);
         add(cmbCarID);
         
-        txtQuantity = new JTextField();
-        txtQuantity.setBackground(new Color(240, 240, 244));
-        txtQuantity.setBounds(550, 250, 200, 40);
-        add(txtQuantity);
+        txtDescription = new JTextField();
+        txtDescription.setBackground(new Color(240, 240, 244));
+        txtDescription.setBounds(550, 250, 200, 40);
+        add(txtDescription);
         
-        txtUnitPrice = new JTextField();
-        txtUnitPrice.setBackground(new Color(240, 240, 244));
-        txtUnitPrice.setBounds(550, 310, 200, 40);
-        add(txtUnitPrice);
+        txtCost = new JTextField();
+        txtCost.setBackground(new Color(240, 240, 244));
+        txtCost.setBounds(550, 310, 200, 40);
+        add(txtCost);
         
         txtDate = new JTextField();
         txtDate.setBackground(new Color(240, 240, 244));
@@ -123,6 +142,7 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         btnCancel.setBounds(650, 510, 100, 40);
         add(btnCancel);
         
+//<<<<<<< HEAD
         model = new DefaultTableModel(tblColumns, 0);
         table = new JTable(model);
         MaintenanceRecord() ;
@@ -135,6 +155,27 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         panel.setBackground(new Color(245, 245, 220));
         panel.setBounds(300, 0, 1070, 700);
         add(panel);
+//=======
+        model = new DefaultTableModel();
+        model.setColumnIdentifiers(new String[] {
+            "Car ID",
+            "Maintenance Type",
+            "Description",
+            "Cost",
+            "Date"
+        });
+
+        table = new JTable(model);
+        scrollPane = new JScrollPane(table);
+        scrollPane.setBackground(new Color(177, 218, 220));
+        scrollPane.setBounds(800, 130, 500, 500);
+        add(scrollPane);
+       
+        panel = new JPanel();
+        panel.setBackground(new Color(245, 245, 220));
+        panel.setBounds(300, 0, 1070, 700);
+        add(panel);
+//>>>>>>> 3b0023037c9f3d4bc341013c8d77751b3b582316
         
         btnAdd.addActionListener(this);
         btnEdit.addActionListener(this);
@@ -153,9 +194,9 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         lblQuantity.setVisible(false);
         lblCarParts.setVisible(false);
         txtDate.setVisible(false);
-        txtQuantity.setVisible(false);
+        txtDescription.setVisible(false);
         cmbCarID.setVisible(false);
-        txtUnitPrice.setVisible(false);
+        txtCost.setVisible(false);
         cmbType.setVisible(false);
     }
     
@@ -172,17 +213,17 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         lblQuantity.setVisible(true);
         lblCarParts.setVisible(true);
         txtDate.setVisible(true);
-        txtQuantity.setVisible(true);
+        txtDescription.setVisible(true);
         cmbCarID.setVisible(true);
-        txtUnitPrice.setVisible(true);
+        txtCost.setVisible(true);
         cmbType.setVisible(true);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
          if (e.getSource() == btnCancel) {
-            txtQuantity.setText("");
-            txtUnitPrice.setText("");
+            txtDescription.setText("");
+            txtCost.setText("");
             txtDate.setText("");
             JOptionPane.showMessageDialog(null, "Text Fields Cleared!");
         } else if (e.getSource() == btnDelete) {
@@ -201,28 +242,95 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
             }
         } else if (e.getSource() == btnEdit) {
             String carID = cmbCarID.getSelectedItem().toString();
+//<<<<<<< HEAD
             String carService = cmbType.getSelectedItem().toString();
+//            int selectedRow = table.getSelectedRow();
+//            if (selectedRow != -1) {
+//                model.setValueAt(
+//                        carID, selectedRow, 0 );
+//                model.setValueAt(
+//                        carService, selectedRow, 1 );
+//                model.setValueAt(
+//                        txtDescription.getText(), selectedRow, 2 );
+//                model.setValueAt (
+//                        txtCost.getText(), selectedRow, 3 );
+//                model.setValueAt(
+//                        txtDate.getText(), selectedRow, 4 );
+//                JOptionPane.showMessageDialog(null, "Car Maintenance Updated Successfully!");
+
             int selectedRow = table.getSelectedRow();
+            
             if (selectedRow != -1) {
-                model.setValueAt(
-                        carID, selectedRow, 0 );
-                model.setValueAt(
-                        carService, selectedRow, 1 );
-                model.setValueAt(
-                        txtQuantity.getText(), selectedRow, 2 );
-                model.setValueAt (
-                        txtUnitPrice.getText(), selectedRow, 3 );
-                model.setValueAt(
-                        txtDate.getText(), selectedRow, 4 );
-                JOptionPane.showMessageDialog(null, "Car Maintenance Updated Successfully!");
+                String oldCarID = model.getValueAt(selectedRow, 0).toString();
+                String oldType = model.getValueAt(selectedRow, 1).toString();
+                String oldDesc = model.getValueAt(selectedRow, 2).toString();
+                String oldCost = model.getValueAt(selectedRow, 3).toString();
+                String oldDate = model.getValueAt(selectedRow, 4).toString();
+
+                String newCarID = cmbCarID.getSelectedItem().toString();
+                String newType = cmbType.getSelectedItem().toString();
+                String newDesc = txtDescription.getText();
+                String newCostStr = txtCost.getText();
+                String newDate = txtDate.getText();
+
+                double newCost = 0.0;
+                try {
+                    newCost = Double.parseDouble(newCostStr);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Please enter a valid numeric cost.");
+                    return;
+                }
+
+                Connection conn = connectToDatabase();
+                if (conn != null) {
+                    String sql = "UPDATE vehicle_maintenance SET car_id = ?, maintenance_type = ?, description = ?, cost = ?, date = ? " +
+                                 "WHERE car_id = ? AND maintenance_type = ? AND description = ? AND cost = ? AND date = ?";
+                    try {
+                        PreparedStatement pst = conn.prepareStatement(sql);
+                        
+                        pst.setString(1, newCarID);
+                        pst.setString(2, newType);
+                        pst.setString(3, newDesc);
+                        pst.setDouble(4, newCost);
+                        pst.setString(5, newDate);
+                        
+                        pst.setString(6, oldCarID);
+                        pst.setString(7, oldType);
+                        pst.setString(8, oldDesc);
+                        pst.setDouble(9, Double.parseDouble(oldCost));
+                        pst.setString(10, oldDate);
+                        
+                        pst.executeUpdate();
+                        pst.close();
+                        conn.close();
+                        
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(null, "Database Update Error: " + ex.getMessage());
+                        return; 
+                    }
+                }
+
+                model.setValueAt(newCarID, selectedRow, 0);   
+                model.setValueAt(newType, selectedRow, 1);    
+                model.setValueAt(newDesc, selectedRow, 2);     
+                model.setValueAt(newCostStr, selectedRow, 3); 
+                model.setValueAt(newDate, selectedRow, 4);    
+                
+                JOptionPane.showMessageDialog(null, "Car Maintenance Updated in Database and Table Successfully!");
+                
+                txtDescription.setText("");
+                txtCost.setText("");
+                txtDate.setText("");
+                
+//>>>>>>> 3b0023037c9f3d4bc341013c8d77751b3b582316
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnAdd) {
             String carId = cmbCarID.getSelectedItem().toString();
             String type = cmbType.getSelectedItem().toString();
-            String desc = txtQuantity.getText();
-            String costStr = txtUnitPrice.getText();
+            String desc = txtDescription.getText();
+            String costStr = txtCost.getText();
             String dateStr = txtDate.getText();
             double cost = 0.0;
             try {
@@ -247,6 +355,7 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
                 cost,
                 date
             });
+//<<<<<<< HEAD
             } else {
                 JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Add", JOptionPane.ERROR_MESSAGE);
             }
@@ -256,8 +365,53 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
             } catch (DateTimeParseException ex) {
                 JOptionPane.showMessageDialog(null, "Invalid date format! please use MM/dd/yyyy.", "Add", JOptionPane.ERROR_MESSAGE);
             }
-        }
+//=======
+            
+            Connection conn = connectToDatabase();
+            if (conn != null) {
+                String sql = "INSERT INTO vehicle_maintenance (car_id, maintenance_type, description, cost, date) VALUES (?, ?, ?, ?, ?)";
+                
+                try {
+                    PreparedStatement pst = conn.prepareStatement(sql);
+                    
+                    pst.setString(1, carId);
+                    pst.setString(2, type);
+                    pst.setString(3, desc);
+                    pst.setDouble(4, cost);
+//                    pst.setString(5, date);
+                    
+                    pst.executeUpdate();
+                    
+                    pst.close();
+                    conn.close();
+                    
+                    JOptionPane.showMessageDialog(null, "Car Maintenance Added and Saved to Database Successfully!");
+                    
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(null, "SQL Error: " + ex.getMessage());
+                }
+            }
+
+            txtDescription.setText("");
+            txtCost.setText("");
+            txtDate.setText("");
     }
+    }
+    
+//}
+//    class MaintenanceRecord {
+//    String carId, type, description, date;
+//    double cost;
+//
+//    public MaintenanceRecord(String carId, String type, String description, double cost, String date) {
+//        this.carId = carId;
+//        this.type = type;
+//        this.description = description;
+//        this.cost = cost;
+//        this.date = date;
+////>>>>>>> 3b0023037c9f3d4bc341013c8d77751b3b582316
+//        }
+//    }
     private void MaintenanceRecord() {
     model.setRowCount(0);
 

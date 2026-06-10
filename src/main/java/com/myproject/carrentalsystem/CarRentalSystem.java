@@ -18,7 +18,11 @@ public class CarRentalSystem {
 //        
 //        if (choice == null) choice = "Normal Screen";
         
+//<<<<<<< HEAD
         homePage lp = new homePage();
+//=======
+//        calendarManagement lp = new calendarManagement();
+//>>>>>>> 3b0023037c9f3d4bc341013c8d77751b3b582316
         lp.setVisible(true);
     }
 }

@@ -11,6 +11,9 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 /**
  *
@@ -41,89 +44,89 @@ public class carRentals extends JPanel implements ActionListener{
         setSize(1370, 730);
         setLayout(null);
 //        setOpaque(false);
-        
+
         lblHeader = new JLabel("Car Registration");
         lblHeader.setFont(new Font("Arial", Font.BOLD, 16));
         lblHeader.setForeground(Color.BLUE);
         lblHeader.setBounds(350, 50, 200, 30);
         add(lblHeader);
-        
+
         lblCarID = new JLabel("Car ID ");
         lblCarID.setForeground(Color.BLUE);
         lblCarID.setBounds(400, 130, 100, 40);
         add(lblCarID);
-        
+
         lblMake = new JLabel("Make ");
         lblMake.setForeground(Color.BLUE);
         lblMake.setBounds(400, 190, 100, 40);
         add(lblMake);
-        
+
         lblModel = new JLabel("Model ");
         lblModel.setForeground(Color.BLUE);
         lblModel.setBounds(400, 250, 100, 40);
         add(lblModel);
-        
+
         lblPrice = new JLabel("Rental Price ");
         lblPrice.setForeground(Color.BLUE);
         lblPrice.setBounds(400, 310, 100, 40);
         add(lblPrice);
-        
+
         lblAvailable = new JLabel("Available ");
         lblAvailable.setForeground(Color.BLUE);
         lblAvailable.setBounds(400, 370, 100, 40);
         add(lblAvailable);
-        
+
         txtCarID = new JTextField("000001");
         txtCarID.setBackground(new Color(240, 240, 244));
         txtCarID.setBounds(550, 130, 200, 40);
         add(txtCarID);
-        
+
         txtMake = new JTextField("Ex. Toyota");
         txtMake.setBackground(new Color(240, 240, 244));
         txtMake.setBounds(550, 190, 200, 40);
         add(txtMake);
-        
+
         txtModel = new JTextField("Ex. Innova");
         txtModel.setBackground(new Color(240, 240, 244));
         txtModel.setBounds(550, 250, 200, 40);
         add(txtModel);
-        
+
         txtPrice = new JTextField();
         txtPrice.setBackground(new Color(240, 240, 244));
         txtPrice.setBounds(550, 310, 200, 40);
         add(txtPrice);
-        
+
         cmbAvailable = new JComboBox<>(confirmation);
         cmbAvailable.setBounds(550, 370, 200, 40);
         add(cmbAvailable);
-        
-        btnAdd = new JButton("Add");     
+
+        btnAdd = new JButton("Add");
         btnAdd.setBackground(new Color(0, 130, 120));
-        btnAdd.setForeground(Color.white);    
+        btnAdd.setForeground(Color.white);
         btnAdd.setBounds(450, 440, 100, 40);
         add(btnAdd);
-        
-        btnEdit = new JButton("Edit");   
+
+        btnEdit = new JButton("Edit");
         btnEdit.setBackground(new Color(0, 130, 120));
-        btnEdit.setForeground(Color.white);     
+        btnEdit.setForeground(Color.white);
         btnEdit.setBounds(650, 440, 100, 40);
         add(btnEdit);
-        
-        btnDelete = new JButton("Delete");  
+
+        btnDelete = new JButton("Delete");
         btnDelete.setBackground(new Color(0, 130, 120));
-        btnDelete.setForeground(Color.white);      
+        btnDelete.setForeground(Color.white);
         btnDelete.setBounds(450, 510, 100, 40);
         add(btnDelete);
-        
-        btnCancel = new JButton("Clear");  
+
+        btnCancel = new JButton("Clear");
         btnCancel.setBackground(new Color(0, 130, 120));
-        btnCancel.setForeground(Color.white);      
+        btnCancel.setForeground(Color.white);
         btnCancel.setBounds(650, 510, 100, 40);
         add(btnCancel);
         
         model = new DefaultTableModel(tblColumns, 0);
         table = new JTable(model);
-        loadTableData() ;
+//        loadTableData() ;
         scrollPane = new JScrollPane(table);
         scrollPane.setBackground(new Color(177, 218, 220));
         scrollPane.setBounds(800, 130, 500, 500);
@@ -174,6 +177,7 @@ public class carRentals extends JPanel implements ActionListener{
         txtMake.setVisible(true);
         txtCarID.setVisible(true);
         cmbAvailable.setVisible(true);
+        
     }
 
     @Override
@@ -190,11 +194,40 @@ public class carRentals extends JPanel implements ActionListener{
             int choice = JOptionPane.showConfirmDialog(null, "Do you want to remove this from table?",
                     "Confirmation", JOptionPane.YES_NO_OPTION);
             if (choice == JOptionPane.YES_OPTION) {
-                model.removeRow(selectedRow);
-                JOptionPane.showMessageDialog(null, "Car Deleted Successfully!", "Warning", JOptionPane.WARNING_MESSAGE);
+                    try {
+
+                        // get Car ID from selected row (IMPORTANT: do NOT use ArrayList)
+                        String carID = model.getValueAt(selectedRow, 0).toString();
+
+                        Connection con = DBConnection.getConnection();
+
+                        String sql = "DELETE FROM cars WHERE car_id = ?";
+
+                        PreparedStatement pst = con.prepareStatement(sql);
+                        pst.setString(1, carID);
+
+                        pst.executeUpdate();
+
+                        model.removeRow(selectedRow);
+
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Car Deleted Successfully!",
+                                "Warning",
+                                JOptionPane.WARNING_MESSAGE
+                        );
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Error deleting car!"
+                        );
+                    }
+                    
                 } else {
-                JOptionPane.showMessageDialog(null, "Operation Canceled.");
-            }
+                    JOptionPane.showMessageDialog(null, "Operation Canceled.");
+                }
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
             }
@@ -202,17 +235,39 @@ public class carRentals extends JPanel implements ActionListener{
             String availability = cmbAvailable.getSelectedItem().toString();
             int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {
-                model.setValueAt(
-                        txtCarID.getText(), selectedRow, 0 );
-                model.setValueAt(
-                        txtMake.getText(), selectedRow, 1 );
-                model.setValueAt(
-                        txtModel.getText(), selectedRow, 2 );
-                model.setValueAt (
-                        txtPrice.getText(), selectedRow, 3 );
-                model.setValueAt(
-                        availability, selectedRow, 4 );
-                JOptionPane.showMessageDialog(null, "Car Updated Successfully!");
+
+                try {
+
+                    // GET selected Car ID from table (DO NOT allow edit)
+                    String carID = model.getValueAt(selectedRow, 0).toString();
+
+                    Connection con = DBConnection.getConnection();
+
+                    String sql
+                            = "UPDATE cars SET make=?, model=?, rental_price=?, available=? WHERE car_id=?";
+
+                    PreparedStatement pst = con.prepareStatement(sql);
+
+                    pst.setString(1, txtMake.getText());
+                    pst.setString(2, txtModel.getText());
+                    pst.setDouble(3, Double.parseDouble(txtPrice.getText()));
+                    pst.setString(4, availability);
+                    pst.setString(5, carID);
+
+                    pst.executeUpdate();
+
+                    // update JTable ONLY (UI refresh)
+                    model.setValueAt(txtMake.getText(), selectedRow, 1);
+                    model.setValueAt(txtModel.getText(), selectedRow, 2);
+                    model.setValueAt(txtPrice.getText(), selectedRow, 3);
+                    model.setValueAt(availability, selectedRow, 4);
+
+                    JOptionPane.showMessageDialog(null, "Car Updated Successfully!");
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error updating car!");
+                }
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             }
@@ -223,53 +278,127 @@ public class carRentals extends JPanel implements ActionListener{
             String rentalPrice = txtPrice.getText();
             String availability = cmbAvailable.getSelectedItem().toString();
                 double cost = 0.0;
-            try {
-                cost = Double.parseDouble(rentalPrice);
+//            try {
+//                cost = Double.parseDouble(rentalPrice);
                         
+//                carManager record = new carManager(
+//                        carId,
+//                        brandMake,
+//                        carModel,
+//                        cost,
+//                        availability
+//                );
+//                rentalList.add(record);
+//                
+//            model.addRow(new Object[]{
+//                carId,
+//                brandMake,
+//                carModel,
+//                rentalPrice,
+//                availability
+//            });
+//            JOptionPane.showMessageDialog(null, "Car Added Successfully!");
+//            txtCarID.setText("");
+//            txtMake.setText("");
+//            txtModel.setText("");
+//            txtPrice.setText("");
+            
+//            } catch (NumberFormatException ex) {
+//                JOptionPane.showMessageDialog(null, "Please enter a valid numeric rent Price.", "Add", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+
+//        private void loadTableData(){
+//            model.setRowCount(0);
+//            
+//            for(carManager record : rentalList){
+//                model.addRow(new Object[]{
+//                    record.getCarRegNo(),
+//                    record.getCarMake(),
+//                    record.getCarModel(),
+//                    record.getRentalPrice(),
+//                    record.getAvailable()
+//                });
+//            }
+//    }
+
+            try {
+                Connection con = DBConnection.getConnection();
+
+                String sql
+                        = "INSERT INTO cars "
+                        + "(car_id, make, model, rental_price, available) "
+                        + "VALUES (?, ?, ?, ?, ?)";
+
+                PreparedStatement pst = con.prepareStatement(sql);
+
+                pst.setString(1, carId);
+                pst.setString(2, brandMake);
+                pst.setString(3, carModel);
+                pst.setDouble(4, Double.parseDouble(rentalPrice));
+                pst.setString(5, availability);
+
+                pst.executeUpdate();
+
             if (!(carId.isEmpty() || brandMake.isEmpty() || carModel.isEmpty() || rentalPrice.isEmpty())) {
                 
-                carManager record = new carManager(
-                        carId,
-                        brandMake,
-                        carModel,
-                        cost,
-                        availability
+                model.addRow(new Object[]{
+                    carId,
+                    brandMake,
+                    carModel,
+                    rentalPrice,
+                    availability
+                });
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Car Added Successfully!"
                 );
-                rentalList.add(record);
-                
-            model.addRow(new Object[]{
-                carId,
-                brandMake,
-                carModel,
-                rentalPrice,
-                availability
-            });
-            JOptionPane.showMessageDialog(null, "Car Added Successfully!");
-            txtCarID.setText("");
-            txtMake.setText("");
-            txtModel.setText("");
-            txtPrice.setText("");
-            } else {
+
+                txtCarID.setText("");
+                txtMake.setText("");
+                txtModel.setText("");
+                txtPrice.setText("");
+                } else {
                 JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Add", JOptionPane.ERROR_MESSAGE);
             }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(null, "Please enter a valid numeric rent Price.", "Add", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
 
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Error saving car!"
+                );
+            }
         }
     }
-        private void loadTableData(){
-            model.setRowCount(0);
-            
-            for(carManager record : rentalList){
+    private void loadTableData() {
+
+        model.setRowCount(0);
+
+        try {
+
+            Connection con = DBConnection.getConnection();
+
+            String sql = "SELECT * FROM cars";
+
+            PreparedStatement pst = con.prepareStatement(sql);
+
+            ResultSet rs = pst.executeQuery();
+
+            while (rs.next()) {
+
                 model.addRow(new Object[]{
-                    record.getCarID(),
-                    record.getCustomerID(),
-                    record.getCustomerName(),
-                    record.getRentFee(),
-                    record.getRentHour()
+                    rs.getString("car_id"),
+                    rs.getString("make"),
+                    rs.getString("model"),
+                    rs.getDouble("rental_price"),
+                    rs.getString("available")
                 });
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
