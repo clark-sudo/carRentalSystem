@@ -18,7 +18,7 @@ public class CarRentalSystem {
 //        
 //        if (choice == null) choice = "Normal Screen";
         
-        calendarManagement lp = new calendarManagement();
+        homePage lp = new homePage();
         lp.setVisible(true);
     }
 }

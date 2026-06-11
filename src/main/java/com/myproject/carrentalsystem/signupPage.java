@@ -5,6 +5,7 @@
 package com.myproject.carrentalsystem;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -18,7 +19,8 @@ public class signupPage extends JFrame implements ActionListener{
     
     private JLabel lblHeader, lblUsername, lblPassword;
     private JButton btnCreate, btnReset, btnSignin;
-    private JTextField txtUsername, txtPassword;
+    private JTextField txtUsername;
+    private JPasswordField pssPassword;
     
     private String username = "admin";
     private String password = "admin123";
@@ -44,13 +46,16 @@ public class signupPage extends JFrame implements ActionListener{
         } else {
         }
         
+        setTitle("Car Rental");
         setSize(700, 600);
         setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
         
-        lblHeader = new JLabel("Car Rental App");
+        lblHeader = new JLabel("Register Account");
         lblHeader.setForeground(Color.BLUE);
-        lblHeader.setBounds(50, 50, 100, 100);
+        lblHeader.setFont(new Font("Arial", Font.BOLD, 20));
+        lblHeader.setBounds(50, 50, 200, 30);
         add(lblHeader);
         
         lblUsername = new JLabel("Enter new Username: ", SwingConstants.RIGHT);
@@ -67,9 +72,9 @@ public class signupPage extends JFrame implements ActionListener{
         txtUsername.setBounds(350, 200, 200, 40);
         add(txtUsername);
         
-        txtPassword = new JTextField("********");
-        txtPassword.setBounds(350, 260, 200, 40);
-        add(txtPassword);
+        pssPassword = new JPasswordField("********");
+        pssPassword.setBounds(350, 260, 200, 40);
+        add(pssPassword);
         
         btnCreate = new JButton("SignIn");
         btnCreate.setBackground(new Color(66, 133, 244));
@@ -102,7 +107,7 @@ public class signupPage extends JFrame implements ActionListener{
             lp.setVisible(true);
         } else if (e.getSource() == btnReset) {
             txtUsername.setText("");
-            txtPassword.setText("");
+            pssPassword.setText("");
         } else if (e.getSource() == btnSignin) {
             dispose();
             loginPage lp = new loginPage();

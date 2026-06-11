@@ -8,14 +8,14 @@ package com.myproject.carrentalsystem;
  *
  * @author Sophia
  */
-public class rentalCars {
+public class carManager {
     private String carRegNo;
     private String carMake;
     private String carModel;
-    private float rentalPrice;
+    private double rentalPrice;
     private String available;
 
-    public rentalCars(String carRegNo, String carMake, String carModel, float rentalPrice, String available) {
+    public carManager(String carRegNo, String carMake, String carModel, double rentalPrice, String available) {
         this.carRegNo = carRegNo;
         this.carMake = carMake;
         this.carModel = carModel;
@@ -32,7 +32,7 @@ public class rentalCars {
     public String getCarModel() { 
         return carModel; 
     }
-    public float getRentalPrice() { 
+    public double getRentalPrice() { 
         return rentalPrice; 
     }
     public String getAvailable() { 
