@@ -19,6 +19,9 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.util.LinkedList;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 /**
  *
@@ -60,6 +63,35 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         }
     }
         
+    void load() {
+        dfltModel.setRowCount(0);
+        
+        Connection conn = connectToDatabase();
+        if (conn != null) {
+            String sql = "SELECT car_id, maintenance_type, description, cost, date FROM vehicle_maintenance";
+            try {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql);
+                
+                while (rs.next()) {
+                    String carId = rs.getString("car_id");
+                    String type = rs.getString("maintenance_type");
+                    String desc = rs.getString("description");
+                    double cost = rs.getDouble("cost");
+                    String date = rs.getString("date");
+                    
+                    dfltModel.addRow(new Object[]{carId, type, desc, cost, date});
+                }
+                
+                rs.close();
+                st.close();
+                conn.close();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Failed to load background records: " + ex.getMessage());
+            }
+        }
+    }
+
     vehicleMaintenance() {
         
         setLayout(null);
@@ -182,6 +214,12 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         btnDelete.addActionListener(this);
         btnCancel.addActionListener(this);
         
+        btnCars.addActionListener(this);
+        btnCustomer.addActionListener(this);
+        btnAvailable.addActionListener(this);
+        btnMaintenance.addActionListener(this);
+        btnLogout.addActionListener(this);
+        load();
         lblUnitPrice.setVisible(false);
         scrollPane.setVisible(false);
         btnCancel.setVisible(false);
@@ -221,6 +259,30 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == btnLogout) {
+            int choice = JOptionPane.showConfirmDialog(null, "Are you sure you want to log out?", "Logout", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (choice == JOptionPane.YES_OPTION) {
+            dispose();
+            loginPage lp = new loginPage();
+            lp.setVisible(true);
+            }
+        } else if (e.getSource() == btnMaintenance) {
+            dispose();
+            vehicleMaintenance cm = new vehicleMaintenance();
+            cm.setVisible(true);
+        } else if (e.getSource() == btnAvailable) {
+            dispose();
+            rentalInvoices cal = new rentalInvoices();
+            cal.setVisible(true);
+        } else if (e.getSource() == btnCustomer) {
+            dispose();
+            bookingReservation ctm = new bookingReservation();
+            ctm.setVisible(true);
+        } else if (e.getSource() == btnCars) {
+            dispose();
+            carRentals car = new carRentals();
+            car.setVisible(true);
+        } else if (e.getSource() == btnCancel) {
          if (e.getSource() == btnCancel) {
             txtDescription.setText("");
             txtCost.setText("");
@@ -232,6 +294,35 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
             int choice = JOptionPane.showConfirmDialog(null, "Do you want to remove this from table?",
                     "Confirmation", JOptionPane.YES_NO_OPTION);
             if (choice == JOptionPane.YES_OPTION) {
+                
+                String carID = dfltModel.getValueAt(selectedRow, 0).toString();
+                String type = dfltModel.getValueAt(selectedRow, 1).toString();
+                String desc = dfltModel.getValueAt(selectedRow, 2).toString();
+                String costStr = dfltModel.getValueAt(selectedRow, 3).toString();
+                String date = dfltModel.getValueAt(selectedRow, 4).toString();
+                
+                Connection conn = connectToDatabase();
+                    if (conn != null) {
+                        String sql = "DELETE FROM vehicle_maintenance WHERE car_id = ? AND maintenance_type = ? AND description = ? AND cost = ? AND date = ?";
+                        try {
+                            PreparedStatement pst = conn.prepareStatement(sql);
+                            
+                            pst.setString(1, carID);
+                            pst.setString(2, type);
+                            pst.setString(3, desc);
+                            pst.setDouble(4, Double.parseDouble(costStr));
+                            pst.setString(5, date);
+                            
+                            pst.executeUpdate();
+                            pst.close();
+                            conn.close();
+                            
+                        } catch (SQLException ex) {
+                            JOptionPane.showMessageDialog(null, "Delete Error. " + ex.getMessage());
+                            return;
+                        }
+                    }
+                dfltModel.removeRow(selectedRow);
                 model.removeRow(selectedRow);
                 JOptionPane.showMessageDialog(null, "Car Maintenance Deleted Successfully!", "Warning", JOptionPane.WARNING_MESSAGE);
                 } else {
@@ -241,6 +332,8 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
                 JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnEdit) {
+            
+            int selectedRow = tblManagement.getSelectedRow();
             String carID = cmbCarID.getSelectedItem().toString();
 //<<<<<<< HEAD
             String carService = cmbType.getSelectedItem().toString();
