@@ -25,6 +25,7 @@ public class carRentals extends JFrame implements ActionListener{
     private JTable tblManagement, tblDisplay;
     private JScrollPane spTable;
     private DefaultTableModel dfltModel;
+    public static ArrayList<CarInMemory> carList = new ArrayList<>();
     protected static final ArrayList<String> darkMode = new ArrayList<>(){{
         add("ON");
         add("OFF");
@@ -167,6 +168,7 @@ public class carRentals extends JFrame implements ActionListener{
         });
 
         tblManagement = new JTable(dfltModel);
+        loadTableData();
         spTable = new JScrollPane(tblManagement);
         spTable.setBackground(new Color(177, 218, 220));
         spTable.setBounds(800, 130, 500, 500);
@@ -223,6 +225,7 @@ public class carRentals extends JFrame implements ActionListener{
             int choice = JOptionPane.showConfirmDialog(null, "Do you want to remove this from table?",
                     "Confirmation", JOptionPane.YES_NO_OPTION);
             if (choice == JOptionPane.YES_OPTION) {
+                carList.remove(selectedRow);
                 dfltModel.removeRow(selectedRow);
                 JOptionPane.showMessageDialog(null, "Car Deleted Successfully!", "Warning", JOptionPane.WARNING_MESSAGE);
                 } else {
@@ -234,11 +237,16 @@ public class carRentals extends JFrame implements ActionListener{
         } else if (e.getSource() == btnEdit) {
             String availability = cmbAvailable.getSelectedItem().toString();
             int selectedRow = tblManagement.getSelectedRow();
-//                    int hourRent = Integer.parseInt(txtHour.getText());
-//            String carModel = txtModel.getText();
-//                    float rentalPrice = 1f;
+
             if (selectedRow != -1) {
-//                    manager.updateCars(selectedRow, hourRent, carModel, rentalPrice);
+                CarInMemory car = carList.get(selectedRow);
+
+                car.setCarID(txtCarID.getText());
+                car.setMake(txtMake.getText());
+                car.setModel(txtModel.getText());
+                car.setRentalPrice(txtPrice.getText());
+                car.setAvailability(availability);
+
                 dfltModel.setValueAt(
                         txtCarID.getText(), selectedRow, 0 );
                 dfltModel.setValueAt(
@@ -259,7 +267,18 @@ public class carRentals extends JFrame implements ActionListener{
             String carModel = txtModel.getText();
             String rentalPrice = txtPrice.getText();
             String availability = cmbAvailable.getSelectedItem().toString();
-                    int hourRent = 1;
+            
+            CarInMemory car = new CarInMemory(
+                carId,
+                brandMake,
+                carModel,
+                rentalPrice,
+                availability
+            );
+
+            carList.add(car);
+            System.out.println("Cars Stored: " + carList.size());
+            int hourRent = 1;
 //                com.myproject.carrentalsystem.rentalCars car = new com.myproject.carrentalsystem.rentalCars(hourRent, carModel, rentalPrice);
             dfltModel.addRow(new Object[]{
                 carId,
@@ -276,4 +295,19 @@ public class carRentals extends JFrame implements ActionListener{
         }
     }
     
+    private void loadTableData() {
+
+    dfltModel.setRowCount(0);
+
+    for (CarInMemory car : carList) {
+
+        dfltModel.addRow(new Object[]{
+            car.getCarID(),
+            car.getMake(),
+            car.getModel(),
+            car.getRentalPrice(),
+            car.getAvailability()
+        });
+    }
+}
 }

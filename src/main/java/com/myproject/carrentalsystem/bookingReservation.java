@@ -24,6 +24,7 @@ public class bookingReservation extends JFrame implements ActionListener{
     private JTable tblManagement, tblDisplay;
     private JScrollPane spTable;
     private DefaultTableModel dfltModel;
+    public static ArrayList<CustomerInMemory> customerList = new ArrayList<>();
     protected static final ArrayList<String> darkMode = new ArrayList<>(){{
         add("ON");
         add("OFF");
@@ -166,6 +167,7 @@ public class bookingReservation extends JFrame implements ActionListener{
         });
 
         tblManagement = new JTable(dfltModel);
+        loadTableData();
         spTable = new JScrollPane(tblManagement);
         spTable.setBackground(new Color(177, 218, 220));
         spTable.setBounds(800, 130, 500, 500);
@@ -223,6 +225,7 @@ public class bookingReservation extends JFrame implements ActionListener{
             int choice = JOptionPane.showConfirmDialog(null, "Do you want to remove this from table?",
                     "Confirmation", JOptionPane.YES_NO_OPTION);
             if (choice == JOptionPane.YES_OPTION) {
+                customerList.remove(selectedRow);
                 dfltModel.removeRow(selectedRow);
                 JOptionPane.showMessageDialog(null, "Cutomer Deleted Successfully!", "Warning", JOptionPane.WARNING_MESSAGE);
                 } else {
@@ -234,7 +237,15 @@ public class bookingReservation extends JFrame implements ActionListener{
         } else if (e.getSource() == btnEdit) {
             int selectedRow = tblManagement.getSelectedRow();
             if (selectedRow != -1) {
-//                    manager.updateCars(selectedRow, hourRent, carModel, rentalPrice);
+                
+                CustomerInMemory customer = customerList.get(selectedRow);
+
+                customer.setCustomerID(txtCustomerID.getText());
+                customer.setCustomerName(txtCustomer.getText());
+                customer.setAddress(txaAddress.getText());
+                customer.setNumber(txtNumber.getText());
+                customer.setEmail(txtEmail.getText());
+
                 dfltModel.setValueAt(
                         txtCustomerID.getText(), selectedRow, 0 );
                 dfltModel.setValueAt(
@@ -250,19 +261,30 @@ public class bookingReservation extends JFrame implements ActionListener{
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.");
             }
         } else if (e.getSource() == btnAdd) {
-            String carId = txtCustomerID.getText();
-            String brandMake = txtCustomer.getText();
-            String carModel = txtNumber.getText();
-            String rentalPrice = txaAddress.getText();
-            String availability = txtEmail.getText();
+            String customerID = txtCustomerID.getText();
+            String customerName = txtCustomer.getText();
+            String number = txtNumber.getText();
+            String address = txaAddress.getText();
+            String email = txtEmail.getText();
+            
+            CustomerInMemory customer = new CustomerInMemory(
+                txtCustomerID.getText(),
+                txtCustomer.getText(),
+                txaAddress.getText(),
+                txtNumber.getText(),
+                txtEmail.getText()
+            );
+
+            customerList.add(customer);
+            System.out.println("Customers Stored: " + customerList.size());
                     int hourRent = 1;
-//                com.myproject.carrentalsystem.rentalCars car = new com.myproject.carrentalsystem.rentalCars(hourRent, carModel, rentalPrice);
+
             dfltModel.addRow(new Object[]{
-                carId,
-                brandMake,
-                carModel,
-                rentalPrice,
-                availability
+                customerID,
+                customerName,
+                number,
+                address,
+                email
             });
             JOptionPane.showMessageDialog(null, "Customer Added Successfully!");
            txtCustomerID.setText("");
@@ -273,4 +295,19 @@ public class bookingReservation extends JFrame implements ActionListener{
         }
     }
     
+    private void loadTableData() {
+
+    dfltModel.setRowCount(0);
+
+    for (CustomerInMemory customer : customerList) {
+
+        dfltModel.addRow(new Object[]{
+            customer.getCustomerID(),
+            customer.getCustomerName(),
+            customer.getNumber(),
+            customer.getAddress(),
+            customer.getEmail()
+        });
+    }
+}
 }
