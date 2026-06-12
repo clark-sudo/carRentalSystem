@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.myproject.carrentalsystem;
 
 import java.awt.Color;
@@ -11,12 +7,15 @@ import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.LinkedList;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 /**
- *
+ * Perfectly matched with 'vehicle_maintenance' database structure
  * @author hicru
  */
-public class vehicleMaintenance extends JFrame implements ActionListener{
+public class vehicleMaintenance extends JFrame implements ActionListener {
 
     private JLabel lblApp, lblHeader, lblCarID, lblType, lblDescription, lblCost, lblDate, lblDueDate; 
     private JButton btnCars, btnCustomer, btnAvailable, btnMaintenance, btnLogout, btnAdd, btnEdit, btnDelete, btnCancel;
@@ -30,9 +29,8 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
     protected static final ArrayList<String> darkMode = new ArrayList<>(){{
         add("ON");
         add("OFF");
-        }};
+    }};
     
-
     private LinkedList<MaintenanceRecord> maintenanceHistory = new LinkedList<>();
 
     vehicleMaintenance() {
@@ -40,19 +38,17 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
     }
     
     vehicleMaintenance(String screenType) {
-        
         if (screenType.equals("ON")){
-        getContentPane().setBackground(new Color(45, 52, 54));
+            getContentPane().setBackground(new Color(45, 52, 54));
         } else if (screenType.equals("OFF")){
-        getContentPane().setBackground(new Color(245, 245, 220));
-        } else {
+            getContentPane().setBackground(new Color(245, 245, 220));
         }
+        
         setName("Vehicle Repair");
         getContentPane().setBackground(new Color(45, 52, 54));
         setSize(1370, 730);
         setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
         
         lblApp = new JLabel("Car Rental App", SwingConstants.CENTER);
         lblApp.setForeground(Color.white);
@@ -164,21 +160,25 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         btnCancel.setBounds(650, 510, 100, 40);
         add(btnCancel);
         
+        // Added a hidden index 0 column for ID so SQL operations identify exactly which record to edit/delete
         dfltModel = new DefaultTableModel();
         dfltModel.setColumnIdentifiers(new String[] {
-            "Car ID",
-            "Maintenance Type",
-            "Description",
-            "Total Cost",
-            "Date"
+            "ID", "Car ID", "Maintenance Type", "Description", "Total Cost", "Date"
         });
 
         tblManagement = new JTable(dfltModel);
+        
+        // Hide the internal "ID" column from displaying directly to users while keeping data tracking alive
+        tblManagement.removeColumn(tblManagement.getColumnModel().getColumn(0));
+
         spTable = new JScrollPane(tblManagement);
         spTable.setBackground(new Color(177, 218, 220));
         spTable.setBounds(800, 130, 500, 500);
         add(spTable);
        
+        // Pull database entries onto screen
+        loadTableData();
+
         tblDisplay = new JTable();
         tblDisplay.setBackground(new Color(245, 245, 220));
         tblDisplay.setBounds(300, 0, 1070, 700);
@@ -194,6 +194,31 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         btnAvailable.addActionListener(this);
         btnMaintenance.addActionListener(this);
         btnLogout.addActionListener(this);
+    }
+
+    // Load data from 'vehicle_maintenance' table using exact column matches
+    private void loadTableData() {
+        dfltModel.setRowCount(0); 
+        String sql = "SELECT * FROM vehicle_maintenance";
+        
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+            
+            while (rs.next()) {
+                dfltModel.addRow(new Object[]{
+                    rs.getInt("id"),
+                    rs.getString("car_id"),
+                    rs.getString("maintenance_type"),
+                    rs.getString("description"),
+                    rs.getDouble("cost"),
+                    rs.getString("date")
+                });
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error loading database data: " + ex.getMessage());
+        }
     }
 
     @Override
@@ -226,31 +251,57 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         } else if (e.getSource() == btnDelete) {
             int selectedRow = tblManagement.getSelectedRow();
             if (selectedRow != -1) {
-            int choice = JOptionPane.showConfirmDialog(null, "Do you want to remove this from table?",
-                    "Confirmation", JOptionPane.YES_NO_OPTION);
-            if (choice == JOptionPane.YES_OPTION) {
-                dfltModel.removeRow(selectedRow);
-                JOptionPane.showMessageDialog(null, "Car Maintenance Deleted Successfully!", "Warning", JOptionPane.WARNING_MESSAGE);
-                } else {
-                JOptionPane.showMessageDialog(null, "Operation Canceled.");
-            }
+                int choice = JOptionPane.showConfirmDialog(null, "Do you want to remove this record permanently?",
+                        "Confirmation", JOptionPane.YES_NO_OPTION);
+                if (choice == JOptionPane.YES_OPTION) {
+                    
+                    // Safely targets key row based on accurate primary key ID column value
+                    int recordId = (int) dfltModel.getValueAt(selectedRow, 0);
+                    String delSql = "DELETE FROM vehicle_maintenance WHERE id=?";
+                    
+                    try (Connection con = DBConnection.getConnection(); 
+                         PreparedStatement pst = con.prepareStatement(delSql)) {
+                        pst.setInt(1, recordId);
+                        pst.executeUpdate();
+                        
+                        dfltModel.removeRow(selectedRow);
+                        JOptionPane.showMessageDialog(null, "Car Maintenance Deleted Successfully!");
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Database deletion failed!");
+                    }
+                }
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to remove.");
             }
         } else if (e.getSource() == btnEdit) {
-            String carID = cmbCarID.getSelectedItem().toString();
             int selectedRow = tblManagement.getSelectedRow();
             if (selectedRow != -1) {
-//                    manager.updateCars(selectedRow, hourRent, carModel, rentalPrice);
-                dfltModel.setValueAt(
-                        carID, selectedRow, 0 );
-                dfltModel.setValueAt(
-                        txtDescription.getText(), selectedRow, 2 );
-                dfltModel.setValueAt (
-                        txtCost.getText(), selectedRow, 3 );
-                dfltModel.setValueAt(
-                        txtDate.getText(), selectedRow, 4 );
-                JOptionPane.showMessageDialog(null, "Car Maintenance Updated Successfully!");
+                int recordId = (int) dfltModel.getValueAt(selectedRow, 0);
+                
+                String newCarID = cmbCarID.getSelectedItem().toString();
+                String newType = cmbType.getSelectedItem().toString();
+                String newDesc = txtDescription.getText();
+                String newCost = txtCost.getText();
+                String newDate = txtDate.getText();
+
+                String updateSql = "UPDATE vehicle_maintenance SET car_id=?, maintenance_type=?, description=?, cost=?, date=? WHERE id=?";
+                try (Connection con = DBConnection.getConnection(); 
+                     PreparedStatement pst = con.prepareStatement(updateSql)) {
+                    pst.setString(1, newCarID);
+                    pst.setString(2, newType);
+                    pst.setString(3, newDesc);
+                    pst.setDouble(4, Double.parseDouble(newCost));
+                    pst.setString(5, newDate);
+                    pst.setInt(6, recordId);
+                    pst.executeUpdate();
+                    
+                    loadTableData();
+                    JOptionPane.showMessageDialog(null, "Car Maintenance Updated Successfully!");
+                } catch(Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Update failed: " + ex.getMessage());
+                }
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.");
             }
@@ -269,26 +320,32 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
                 return;
             }
 
-            MaintenanceRecord record = new MaintenanceRecord(carId, type, desc, cost, date);
-            maintenanceHistory.add(record); 
-
-            dfltModel.addRow(new Object[]{
-                carId,
-                type,
-                desc,
-                cost,
-                date
-            });
-
-            JOptionPane.showMessageDialog(null, "Car Maintenance Added Successfully!");
-            txtDescription.setText("");
-            txtCost.setText("");
-            txtDate.setText("");
+            // Target column parameters match schema properties perfectly
+            String insSql = "INSERT INTO vehicle_maintenance (car_id, maintenance_type, description, cost, date) VALUES (?, ?, ?, ?, ?)";
+            try (Connection con = DBConnection.getConnection(); 
+                 PreparedStatement pst = con.prepareStatement(insSql)) {
+                pst.setString(1, carId);
+                pst.setString(2, type);
+                pst.setString(3, desc);
+                pst.setDouble(4, cost);
+                pst.setString(5, date);
+                pst.executeUpdate();
+                
+                loadTableData();
+                JOptionPane.showMessageDialog(null, "Car Maintenance Added and Saved Successfully!");
+                
+                txtDescription.setText("");
+                txtCost.setText("");
+                txtDate.setText("");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Failed to save record to database!");
+            }
+        }
     }
-    }
-    
 }
-    class MaintenanceRecord {
+
+class MaintenanceRecord {
     String carId, type, description, date;
     double cost;
 
@@ -298,5 +355,5 @@ public class vehicleMaintenance extends JFrame implements ActionListener{
         this.description = description;
         this.cost = cost;
         this.date = date;
-        }
     }
+}

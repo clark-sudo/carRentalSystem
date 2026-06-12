@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.myproject.carrentalsystem;
 
 import java.awt.Color;
@@ -19,7 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 /**
- *
+ * Updated Calendar Management Class - Fixed Double Booking Bug
  * @author hicru
  */
 public class calendarManagement extends JFrame implements ActionListener {
@@ -167,46 +163,46 @@ public class calendarManagement extends JFrame implements ActionListener {
             hp.setVisible(true);
 
         } else if (e.getSource() == btnDelete) {
-
             int selectedRow = tblManagement.getSelectedRow();
-
             if (selectedRow != -1) {
-
                 int choice = JOptionPane.showConfirmDialog(
                         null,
-                        "Do you want to remove this record?",
+                        "Do you want to remove this record and mark the car as available?",
                         "Confirmation",
                         JOptionPane.YES_NO_OPTION
                 );
 
                 if (choice == JOptionPane.YES_OPTION) {
-
                     try {
-
                         String carID = model.getValueAt(selectedRow, 0).toString();
                         String customerID = model.getValueAt(selectedRow, 1).toString();
 
                         Connection con = DBConnection.getConnection();
-
+                        
+                        // Delete the rental entry
                         String sql = "DELETE FROM rentals WHERE car_id=? AND customer_id=?";
-
                         PreparedStatement pst = con.prepareStatement(sql);
                         pst.setString(1, carID);
                         pst.setString(2, customerID);
-
                         pst.executeUpdate();
 
+                        // FIX: Mark the car as available again in the database upon removal
+                        String sqlUpdateCar = "UPDATE cars SET available = 'Yes' WHERE car_id = ?";
+                        PreparedStatement pstCar = con.prepareStatement(sqlUpdateCar);
+                        pstCar.setString(1, carID);
+                        pstCar.executeUpdate();
+
                         model.removeRow(selectedRow);
-
-                        JOptionPane.showMessageDialog(null, "Record Deleted Successfully!");
-
+                        
+                        // Refresh active drop-downs
+                        loadCarIDs();
+                        
+                        JOptionPane.showMessageDialog(null, "Record Deleted & Car Set to Available!");
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         JOptionPane.showMessageDialog(null, "Error deleting record!");
                     }
-
                 }
-
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to delete.");
             }
@@ -214,11 +210,10 @@ public class calendarManagement extends JFrame implements ActionListener {
             isEditing = false;
             tblManagement.clearSelection();
             updateFieldStatus();
+            
         } else if (e.getSource() == btnUpdate) {
             int selectedRow = tblManagement.getSelectedRow();
             if (selectedRow != -1) {
-
-                // First click on Edit — populate fields from selected row
                 if (!isEditing) {
                     isEditing = true;
                     cmbCarID.setSelectedItem(model.getValueAt(selectedRow, 0));
@@ -228,7 +223,7 @@ public class calendarManagement extends JFrame implements ActionListener {
                     txtRentHour.setText(model.getValueAt(selectedRow, 4).toString());
                     txtDate.setText(model.getValueAt(selectedRow, 5).toString());
                     txtDueDate.setText(model.getValueAt(selectedRow, 6).toString());
-                    // Enable all fields so user can make changes
+                    
                     cmbCustomerID.setEnabled(true);
                     txtCustomer.setEnabled(true);
                     txtRentFee.setEnabled(true);
@@ -250,7 +245,6 @@ public class calendarManagement extends JFrame implements ActionListener {
                         String carID = cmbCarID.getSelectedItem().toString();
                         String customerID = cmbCustomerID.getSelectedItem().toString();
 
-                        // Parse the edited dates
                         LocalDate startDate = LocalDate.parse(txtDate.getText().trim(), formatter);
                         LocalDate dueDate = LocalDate.parse(txtDueDate.getText().trim(), formatter);
 
@@ -259,7 +253,6 @@ public class calendarManagement extends JFrame implements ActionListener {
                             return;
                         }
 
-                        // Recalculate the price by instantiating a temporary CalendarInMemory object
                         CalendarInMemory updatedCim = new CalendarInMemory(
                                 carID,
                                 customerID,
@@ -270,22 +263,17 @@ public class calendarManagement extends JFrame implements ActionListener {
                                 dueDate.format(formatter)
                         );
 
-                        // Parse the freshly calculated total price
                         double newTotalPrice = Double.parseDouble(updatedCim.getTotalPrice().replace(",", ""));
-
                         Connection con = DBConnection.getConnection();
 
-                        // 1. ADDED total_price=? TO THE SQL UPDATE STRING
                         String sql = "UPDATE rentals SET customer_id=?, customer_name=?, rental_fee=?, "
                                 + "rental_hour=?, start_date=?, due_date=?, total_price=? WHERE car_id=?";
 
                         PreparedStatement pst = con.prepareStatement(sql);
-
                         pst.setString(1, customerID);
                         pst.setString(2, txtCustomer.getText());
                         pst.setDouble(3, Double.parseDouble(txtRentFee.getText()));
 
-                        // Handle the empty hour bug safely
                         if (rentHourInput.isEmpty()) {
                             pst.setNull(4, java.sql.Types.INTEGER);
                         } else {
@@ -294,12 +282,11 @@ public class calendarManagement extends JFrame implements ActionListener {
 
                         pst.setDate(5, java.sql.Date.valueOf(startDate));
                         pst.setDate(6, java.sql.Date.valueOf(dueDate));
-                        pst.setDouble(7, newTotalPrice); // 2. SET THE NEW TOTAL PRICE HERE
+                        pst.setDouble(7, newTotalPrice);
                         pst.setString(8, carID);
 
                         pst.executeUpdate();
 
-                        // 3. UPDATE THE JTABLE COLUMNS (Including total price at column index 7)
                         model.setValueAt(carID, selectedRow, 0);
                         model.setValueAt(customerID, selectedRow, 1);
                         model.setValueAt(txtCustomer.getText(), selectedRow, 2);
@@ -307,11 +294,10 @@ public class calendarManagement extends JFrame implements ActionListener {
                         model.setValueAt(rentHourInput, selectedRow, 4);
                         model.setValueAt(txtDate.getText(), selectedRow, 5);
                         model.setValueAt(txtDueDate.getText(), selectedRow, 6);
-                        model.setValueAt(updatedCim.getTotalPrice(), selectedRow, 7); // Sets the new formatted total
+                        model.setValueAt(updatedCim.getTotalPrice(), selectedRow, 7);
 
                         JOptionPane.showMessageDialog(null, "Record Updated Successfully!");
 
-                        // Reset editing state and fields
                         isEditing = false;
                         tblManagement.clearSelection();
                         cmbCustomerID.setSelectedIndex(0);
@@ -329,28 +315,30 @@ public class calendarManagement extends JFrame implements ActionListener {
                         JOptionPane.showMessageDialog(null, "Error updating record!");
                     }
                 }
-
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.");
             }
 
         } else if (e.getSource() == btnAdd) {
-            String carID = cmbCarID.getSelectedItem().toString();
-            String customerID = cmbCustomerID.getSelectedItem().toString();
+            String carID = cmbCarID.getSelectedItem() != null ? cmbCarID.getSelectedItem().toString() : null;
+            String customerID = cmbCustomerID.getSelectedItem() != null ? cmbCustomerID.getSelectedItem().toString() : null;
             String customerName = txtCustomer.getText();
             String rentFee = txtRentFee.getText();
             String rentHour = txtRentHour.getText().trim();
             String startDateStr = txtDate.getText().trim();
             String dueDateStr = txtDueDate.getText().trim();
 
-            // Rent hour must be 12 or empty, nothing else
+            if (carID == null || customerID == null) {
+                JOptionPane.showMessageDialog(this, "Please select a valid Car ID and Customer ID.");
+                return;
+            }
+
             if (!rentHour.isEmpty() && !rentHour.equals("12")) {
                 JOptionPane.showMessageDialog(this, "Rental Hour must be 12 or leave it empty.");
                 return;
             }
 
             try {
-                // Parse dates using the MM/dd/yyyy formatter
                 LocalDate startDate = LocalDate.parse(startDateStr, formatter);
                 LocalDate dueDate = LocalDate.parse(dueDateStr, formatter);
 
@@ -359,7 +347,6 @@ public class calendarManagement extends JFrame implements ActionListener {
                     return;
                 }
 
-                // Same day with no hours means nothing to charge
                 long daysBetween = ChronoUnit.DAYS.between(startDate, dueDate);
                 if (daysBetween == 0 && rentHour.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "Same day rental requires 12 hours to be entered.");
@@ -376,7 +363,6 @@ public class calendarManagement extends JFrame implements ActionListener {
                         dueDate.format(formatter)
                 );
 
-                // Use Try-With-Resources to guarantee the statement closes and commits cleanly
                 String sql = "INSERT INTO rentals (car_id, customer_id, customer_name, rental_fee, rental_hour, start_date, due_date, total_price) "
                         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -387,10 +373,8 @@ public class calendarManagement extends JFrame implements ActionListener {
                     pst.setString(3, customerName);
                     pst.setDouble(4, Double.parseDouble(rentFee));
 
-                    // Safely handle empty input for an integer database column
                     if (rentHour.isEmpty()) {
-                        pst.setNull(5, java.sql.Types.INTEGER); // Saves as NULL in DB for daily rentals
-                        // ALTERNATIVE: pst.setInt(5, 0);       // Use this if your DB doesn't allow NULLs
+                        pst.setNull(5, java.sql.Types.INTEGER);
                     } else {
                         pst.setInt(5, Integer.parseInt(rentHour));
                     }
@@ -398,26 +382,33 @@ public class calendarManagement extends JFrame implements ActionListener {
                     pst.setDate(6, java.sql.Date.valueOf(startDate));
                     pst.setDate(7, java.sql.Date.valueOf(dueDate));
 
-                    // Safe numeric formatting for database storage
                     double total = Double.parseDouble(cim.getTotalPrice().replace(",", ""));
                     pst.setDouble(8, total);
 
                     int rowsInserted = pst.executeUpdate();
 
                     if (rowsInserted > 0) {
+                        
+                        // FIX: Directly update the database 'cars' table to turn off availability!
+                        String updateCarSql = "UPDATE cars SET available = 'No' WHERE car_id = ?";
+                        try (PreparedStatement pstCar = con.prepareStatement(updateCarSql)) {
+                            pstCar.setString(1, carID);
+                            pstCar.executeUpdate();
+                        }
+                        
                         JOptionPane.showMessageDialog(null, "Rental Saved Successfully to Database!");
                     } else {
                         JOptionPane.showMessageDialog(null, "Database rejected insertion. Check constraints.");
-                        return; // Stop UI update if DB write failed
+                        return;
                     }
 
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Database Error: " + ex.getMessage());
-                    return; // Stop UI update if DB write failed
+                    return;
                 }
 
-                // Update in-memory collections and UI elements only if DB save succeeded
+                // Update standard clean in-memory array representation
                 for (CarInMemory car : carRentals.carList) {
                     if (car.getCarID().equals(carID)) {
                         car.setAvailability("No");
@@ -436,7 +427,9 @@ public class calendarManagement extends JFrame implements ActionListener {
                     cim.getTotalPrice()
                 });
 
-                // Clear input controls for next input session
+                // FIX: Refresh the dropdown elements so that the rented car immediately vanishes
+                loadCarIDs();
+
                 cmbCustomerID.setSelectedIndex(0);
                 txtCustomer.setText("");
                 txtRentFee.setText("");
@@ -459,21 +452,14 @@ public class calendarManagement extends JFrame implements ActionListener {
     }
 
     private void loadTableData() {
-
         model.setRowCount(0);
-
         try {
-
             Connection con = DBConnection.getConnection();
-
             String sql = "SELECT * FROM rentals";
-
             PreparedStatement pst = con.prepareStatement(sql);
-
             ResultSet rs = pst.executeQuery();
 
             while (rs.next()) {
-
                 model.addRow(new Object[]{
                     rs.getString("car_id"),
                     rs.getString("customer_id"),
@@ -485,107 +471,65 @@ public class calendarManagement extends JFrame implements ActionListener {
                     rs.getDouble("total_price")
                 });
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void loadCarIDs() {
-
         cmbCarID.removeAllItems();
-
         try {
-
             Connection con = DBConnection.getConnection();
-
-            String sql
-                    = "SELECT car_id FROM cars WHERE available = 'Yes'";
-
+            String sql = "SELECT car_id FROM cars WHERE available = 'Yes'";
             PreparedStatement pst = con.prepareStatement(sql);
-
             ResultSet rs = pst.executeQuery();
 
             while (rs.next()) {
-
-                cmbCarID.addItem(
-                        rs.getString("car_id")
-                );
+                cmbCarID.addItem(rs.getString("car_id"));
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void loadCustomerIDs() {
-
         cmbCustomerID.removeAllItems();
-
         try {
-
             Connection con = DBConnection.getConnection();
-
-            String sql
-                    = "SELECT customer_id FROM customers";
-
+            String sql = "SELECT customer_id FROM customers";
             PreparedStatement pst = con.prepareStatement(sql);
-
             ResultSet rs = pst.executeQuery();
 
             while (rs.next()) {
-
-                cmbCustomerID.addItem(
-                        rs.getString("customer_id")
-                );
+                cmbCustomerID.addItem(rs.getString("customer_id"));
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void updateFieldStatus() {
-
         if (isEditing) {
             return;
         }
 
-        String selectedCarID
-                = (String) cmbCarID.getSelectedItem();
-
+        String selectedCarID = (String) cmbCarID.getSelectedItem();
         if (selectedCarID == null) {
             txtRentFee.setText("");
             return;
         }
 
         try {
-
             Connection con = DBConnection.getConnection();
-
-            String sql
-                    = "SELECT rental_price, available "
-                    + "FROM cars "
-                    + "WHERE car_id = ?";
-
-            PreparedStatement pst
-                    = con.prepareStatement(sql);
-
+            String sql = "SELECT rental_price, available FROM cars WHERE car_id = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
             pst.setString(1, selectedCarID);
-
             ResultSet rs = pst.executeQuery();
 
             if (rs.next()) {
-
-                txtRentFee.setText(
-                        rs.getString("rental_price")
-                );
-
-                String availability
-                        = rs.getString("available");
-
-                boolean available
-                        = availability.equalsIgnoreCase("Yes");
+                txtRentFee.setText(rs.getString("rental_price"));
+                String availability = rs.getString("available");
+                boolean available = availability.equalsIgnoreCase("Yes");
 
                 cmbCustomerID.setEnabled(available);
                 txtCustomer.setEnabled(available);
@@ -596,53 +540,32 @@ public class calendarManagement extends JFrame implements ActionListener {
                 btnAdd.setEnabled(available);
 
                 if (!available) {
-                    JOptionPane.showMessageDialog(
-                            this,
-                            "This car is currently unavailable."
-                    );
+                    JOptionPane.showMessageDialog(this, "This car is currently unavailable.");
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void updateCustomerInfo() {
-
-        String selectedCustomerID
-                = (String) cmbCustomerID.getSelectedItem();
-
+        String selectedCustomerID = (String) cmbCustomerID.getSelectedItem();
         if (selectedCustomerID == null) {
             return;
         }
 
         try {
-
             Connection con = DBConnection.getConnection();
-
-            String sql
-                    = "SELECT customer_name "
-                    + "FROM customers "
-                    + "WHERE customer_id = ?";
-
-            PreparedStatement pst
-                    = con.prepareStatement(sql);
-
+            String sql = "SELECT customer_name FROM customers WHERE customer_id = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
             pst.setString(1, selectedCustomerID);
-
             ResultSet rs = pst.executeQuery();
 
             if (rs.next()) {
-
-                txtCustomer.setText(
-                        rs.getString("customer_name")
-                );
+                txtCustomer.setText(rs.getString("customer_name"));
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 }
