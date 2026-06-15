@@ -21,23 +21,24 @@ import java.sql.ResultSet;
  */
 public class bookingReservation extends JPanel implements ActionListener{
     
-    private JLabel lblHeader, lblCustomerID, lblCustomer, lblAddress, lblNumber, lblEmail;
+    private JLabel lblHeader, lblLicensedID, lblCustomer, lblAddress, lblNumber, lblEmail;
     private JButton btnAdd, btnEdit, btnDelete, btnCancel;
-    private JTextField txtCustomerID, txtCustomer, txtNumber, txtEmail;
+    private JTextField txtLicensedID, txtCustomer, txtNumber, txtEmail;
     private JTextArea txaAddress;
     private JScrollPane scrollPane;
     private JTable table;
     private DefaultTableModel model;
     private static final String[] tblColumns = {
-            "Customer ID",
+            "Licensed ID",
             "Customer Name",
             "Contact Details",
             "Customer Address",
             "Email Address"
         };
     private JPanel panel;
-    private static ArrayList<customerManager> rentalList = new ArrayList<>();
-    
+    private static ArrayList<customerManager> customerList = new ArrayList<>();
+    private boolean isEditing = false;
+
     bookingReservation() {
         
         setLayout(null);
@@ -48,10 +49,10 @@ public class bookingReservation extends JPanel implements ActionListener{
         lblHeader.setBounds(350, 50, 100, 30);
         add(lblHeader);
 
-        lblCustomerID = new JLabel("Customer ID ");
-        lblCustomerID.setForeground(Color.BLUE);
-        lblCustomerID.setBounds(400, 130, 100, 40);
-        add(lblCustomerID);
+        lblLicensedID = new JLabel("Licensed ID ");
+        lblLicensedID.setForeground(Color.BLUE);
+        lblLicensedID.setBounds(400, 130, 100, 40);
+        add(lblLicensedID);
 
         lblCustomer = new JLabel("Customer Name ");
         lblCustomer.setForeground(Color.BLUE);
@@ -73,10 +74,10 @@ public class bookingReservation extends JPanel implements ActionListener{
         lblEmail.setBounds(400, 370, 100, 40);
         add(lblEmail);
 
-        txtCustomerID = new JTextField();
-        txtCustomerID.setBackground(new Color(240, 240, 244));
-        txtCustomerID.setBounds(550, 130, 200, 40);
-        add(txtCustomerID);
+        txtLicensedID = new JTextField();
+        txtLicensedID.setBackground(new Color(240, 240, 244));
+        txtLicensedID.setBounds(550, 130, 200, 40);
+        add(txtLicensedID);
 
         txtCustomer = new JTextField();
         txtCustomer.setBackground(new Color(240, 240, 244));
@@ -148,11 +149,11 @@ public class bookingReservation extends JPanel implements ActionListener{
         lblAddress.setVisible(false);
         lblCustomer.setVisible(false);
         lblHeader.setVisible(false);
-        lblCustomerID.setVisible(false);
+        lblLicensedID.setVisible(false);
         lblEmail.setVisible(false);
         lblNumber.setVisible(false);
         txtCustomer.setVisible(false);
-        txtCustomerID.setVisible(false);
+        txtLicensedID.setVisible(false);
         txtEmail.setVisible(false);
         txtNumber.setVisible(false);
         txaAddress.setVisible(false);
@@ -167,11 +168,11 @@ public class bookingReservation extends JPanel implements ActionListener{
         lblAddress.setVisible(true);
         lblCustomer.setVisible(true);
         lblHeader.setVisible(true);
-        lblCustomerID.setVisible(true);
+        lblLicensedID.setVisible(true);
         lblEmail.setVisible(true);
         lblNumber.setVisible(true);
         txtCustomer.setVisible(true);
-        txtCustomerID.setVisible(true);
+        txtLicensedID.setVisible(true);
         txtEmail.setVisible(true);
         txtNumber.setVisible(true);
         txaAddress.setVisible(true);
@@ -181,7 +182,7 @@ public class bookingReservation extends JPanel implements ActionListener{
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnCancel) {
-            txtCustomerID.setText("");
+            txtLicensedID.setText("");
             txtCustomer.setText("");
             txaAddress.setText("");
             txtNumber.setText("");
@@ -235,18 +236,35 @@ public class bookingReservation extends JPanel implements ActionListener{
                 JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnEdit) {
-            String customerId = txtCustomerID.getText();
+            String licensedId = txtLicensedID.getText();
             String customerName = txtCustomer.getText();
             String number = txtNumber.getText();
             String address = txaAddress.getText();
             String email = txtEmail.getText();
             int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {
-                
-            if (!(customerId.isEmpty() || customerName.isEmpty() || number.isEmpty() || address.isEmpty())) {
+
+                if (!isEditing) {
+                    isEditing = true;
+                    
+                    txtLicensedID.setText(
+                            model.getValueAt(selectedRow, 0).toString());
+                    txtCustomer.setText(
+                            model.getValueAt(selectedRow, 1).toString());
+                    txtNumber.setText(
+                            model.getValueAt(selectedRow, 2).toString());
+                    txaAddress.setText(
+                            model.getValueAt(selectedRow, 3).toString());
+                    txtEmail.setText(
+                            model.getValueAt(selectedRow, 4).toString());
+                    btnAdd.setEnabled(false);
+                    JOptionPane.showMessageDialog(null, "You can now edit the fields. Click Edit again to save.");
+                    } else {
+
+            if (!(licensedId.isEmpty() || customerName.isEmpty() || number.isEmpty() || address.isEmpty())) {
                 
                 model.setValueAt(
-                        txtCustomerID.getText(), selectedRow, 0 );
+                        txtLicensedID.getText(), selectedRow, 0 );
                 model.setValueAt(
                         txtCustomer.getText(), selectedRow, 1 );
                 model.setValueAt(
@@ -307,6 +325,7 @@ public class bookingReservation extends JPanel implements ActionListener{
                 } else {
                 JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Update", JOptionPane.ERROR_MESSAGE);
             }
+            }
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             }
@@ -359,8 +378,8 @@ public class bookingReservation extends JPanel implements ActionListener{
 //        });
 //    }
 //=======
-            String customerId = txtCustomerID.getText();
-            String customerName = txtCustomer.getText();
+            String licensedId = txtLicensedID.getText();
+            String name = txtCustomer.getText();
             String number = txtNumber.getText();
             String address = txaAddress.getText();
             String email = txtEmail.getText();
@@ -376,19 +395,19 @@ public class bookingReservation extends JPanel implements ActionListener{
 
                 PreparedStatement pst = con.prepareStatement(sql);
 
-                pst.setString(1, customerId);
-                pst.setString(2, customerName);
+                pst.setString(1, licensedId);
+                pst.setString(2, name);
                 pst.setString(3, address);
                 pst.setString(4, number);
                 pst.setString(5, email);
 
                 pst.executeUpdate();
 
-            if (!(customerId.isEmpty() || customerName.isEmpty() || number.isEmpty() || address.isEmpty())) {
+            if (!(licensedId.isEmpty() || name.isEmpty() || number.isEmpty() || address.isEmpty())) {
                 
                 model.addRow(new Object[]{
-                    customerId,
-                    customerName,
+                    licensedId,
+                    name,
                     number,
                     address,
                     email
@@ -399,7 +418,7 @@ public class bookingReservation extends JPanel implements ActionListener{
                         "Customer Added Successfully!"
                 );
 
-                txtCustomerID.setText("");
+                txtLicensedID.setText("");
                 txtCustomer.setText("");
                 txaAddress.setText("");
                 txtNumber.setText("");

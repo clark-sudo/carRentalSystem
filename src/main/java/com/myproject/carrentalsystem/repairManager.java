@@ -10,39 +10,45 @@ package com.myproject.carrentalsystem;
  */
 class repairManager {
     
-    private String carID;
-    private String carParts;
-    private String Quantity;
-    private double Price;
+    private String vehicle;
+    private String type;
+    private String description;
+    private double cost;
     private String Date;
+    private String endDate;
     
-    public repairManager(String carID, String carParts, String Quantity, double Price,
-            String Date){
-        this.carID = carID;
-        this.carParts = carParts;
-        this.Quantity = Quantity;
-        this.Price = Price;
+    public repairManager(String vehicle, String type, String description,
+            double cost, String Date, String endDate){
+        this.vehicle = vehicle;
+        this.type = type;
+        this.description = description;
+        this.cost = cost;
         this.Date = Date;
+        this.endDate = endDate;
         
     }
     
-    public String getCarID(){
-        return carID;
+    public String getVehicle(){
+        return vehicle;
     }
     
-    public String getCustomerID(){
-        return carParts;
+    public String getType(){
+        return type;
     }
     
-    public String getCustomerName(){
-        return Quantity;
+    public String getDescription(){
+        return description;
     }
     
-    public double getRentFee(){
-        return Price;
+    public double getTotalCost(){
+        return cost;
     }
     
-    public String getRentHour(){
+    public String getStartDate(){
         return Date;
+    }
+    
+    public String getEndDate(){
+        return endDate;
     }
 }

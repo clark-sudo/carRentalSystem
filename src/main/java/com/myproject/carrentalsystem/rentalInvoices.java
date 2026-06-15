@@ -27,7 +27,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
     
     private JLabel lblHeader, lblVehicle, lblAvailable, lblCustomer, lblRentFee, lblRentHour, lblDate, lblDueDate;
     private JButton btnAdd, btnEdit, btnDelete, btnCancel;
-    private JTextField txtAvailable, txtCustomer, txtRentFee, txtRentHour, txtDate, txtDueDate;
+    private JTextField txtAvailable, txtRentFee, txtRentHour, txtDate, txtDueDate;
     private JComboBox<String> cmbVehicle, cmbCustomer;
     protected static final String[] cars = {"1", "2"};
     protected static final String[] customers = {"1", "2"};
@@ -36,11 +36,11 @@ public class rentalInvoices extends JPanel implements ActionListener{
     private JScrollPane scrollPane;
     private DefaultTableModel model;
     private static final String[] tblColumns = {
-                "Car",
+                "Vehicle",
                 "Customer Name",
                 "Rental Fee",
                 "Rental Hour",
-                "Date",
+                "Start Date",
                 "Due Date"
         };
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
@@ -57,7 +57,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
         lblHeader.setBounds(350, 50, 100, 30);
         add(lblHeader);
         
-        lblVehicle = new JLabel("Car ID ");
+        lblVehicle = new JLabel("Vehicle ");
         lblVehicle.setForeground(Color.BLUE);
         lblVehicle.setBounds(400, 130, 100, 40);
         add(lblVehicle);
@@ -87,7 +87,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
         lblDate.setBounds(400, 430, 100, 40);
         add(lblDate);
         
-        lblDueDate = new JLabel("Due Date ");
+        lblDueDate = new JLabel("End Date ");
         lblDueDate.setForeground(Color.BLUE);
         lblDueDate.setBounds(400, 490, 100, 40);
         add(lblDueDate);
@@ -102,15 +102,16 @@ public class rentalInvoices extends JPanel implements ActionListener{
         add(txtAvailable);
         txtAvailable.setEditable(false);
         
-        txtCustomer = new JTextField();
-        txtCustomer.setBackground(new Color(240, 240, 244));
-        txtCustomer.setBounds(550, 250, 200, 40);
-        add(txtCustomer);
+        cmbCustomer = new JComboBox<>(customers);
+        cmbCustomer.setBackground(new Color(240, 240, 244));
+        cmbCustomer.setBounds(550, 250, 200, 40);
+        add(cmbCustomer);
         
         txtRentFee = new JTextField();
         txtRentFee.setBackground(new Color(240, 240, 244));
         txtRentFee.setBounds(550, 310, 200, 40);
         add(txtRentFee);
+        txtRentFee.setEditable(false);
         
         txtRentHour = new JTextField();
         txtRentHour.setBackground(new Color(240, 240, 244));
@@ -182,7 +183,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
         lblHeader.setVisible(false);
         lblRentFee.setVisible(false);
         lblRentHour.setVisible(false);
-        txtCustomer.setVisible(false);
+        cmbCustomer.setVisible(false);
         txtAvailable.setVisible(false);
         txtDate.setVisible(false);
         txtDueDate.setVisible(false);
@@ -205,7 +206,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
         lblHeader.setVisible(true);
         lblRentFee.setVisible(true);
         lblRentHour.setVisible(true);
-        txtCustomer.setVisible(true);
+        cmbCustomer.setVisible(true);
         txtAvailable.setVisible(true);
         txtDate.setVisible(true);
         txtDueDate.setVisible(true);
@@ -218,7 +219,6 @@ public class rentalInvoices extends JPanel implements ActionListener{
     public void actionPerformed(ActionEvent e) {
          if (e.getSource() == btnCancel) {
             txtAvailable.setText("");
-            txtCustomer.setText("");
             txtRentFee.setText("");
             txtRentHour.setText("");
             txtDate.setText("");
@@ -270,8 +270,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
                 JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnEdit) {
-            String customerID = txtAvailable.getText();
-            String customerName = txtCustomer.getText();
+            String available = txtAvailable.getText();
             String rentFee = txtRentFee.getText();
             String startDateStr = txtDate.getText();
             String dueDateStr = txtDueDate.getText();
@@ -283,8 +282,8 @@ public class rentalInvoices extends JPanel implements ActionListener{
                     
                     cmbVehicle.setSelectedItem(
                             model.getValueAt(selectedRow, 0) );
-                    txtCustomer.setText(
-                            model.getValueAt(selectedRow, 1).toString());
+                    cmbCustomer.setSelectedItem(
+                            model.getValueAt(selectedRow, 1) );
                     txtRentFee.setText(
                             model.getValueAt(selectedRow, 2).toString());
                     txtRentHour.setText(
@@ -294,12 +293,12 @@ public class rentalInvoices extends JPanel implements ActionListener{
                     txtDueDate.setText(
                             model.getValueAt(selectedRow, 5).toString());
                     
-                    txtAvailable.setEnabled(true);
-                    txtCustomer.setEnabled(true);
-                    txtRentFee.setEnabled(true);
-                    txtRentHour.setEnabled(true);
-                    txtDate.setEnabled(true);
-                    txtDueDate.setEnabled(true);
+//                    txtAvailable.setEnabled(true);
+//                    cmbCustomer.setEnabled(true);
+//                    txtRentFee.setEnabled(true);
+//                    txtRentHour.setEnabled(true);
+//                    txtDate.setEnabled(true);
+//                    txtDueDate.setEnabled(true);
                     btnAdd.setEnabled(false);
                     JOptionPane.showMessageDialog(null, "You can now edit the fields. Click Edit again to save.");
                     
@@ -313,7 +312,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
                     
                     try {
                         String carID = cmbVehicle.getSelectedItem().toString();
-//                        String customerID = cmbAvailable.getSelectedItem().toString();
+                        String customerID = cmbCustomer.getSelectedItem().toString();
                         double fee = 0.0;
                         
                         fee = Double.parseDouble(rentFee);
@@ -324,12 +323,12 @@ public class rentalInvoices extends JPanel implements ActionListener{
                         if (dueDate.isBefore(startDate)) {
                             JOptionPane.showMessageDialog(this, "Due date cannot be before start date.", "Error", JOptionPane.ERROR_MESSAGE);
                             return;
-                        } else if (!(carID.isEmpty() || customerName.isEmpty() || rentFee.isEmpty() )) {
+                        }
                         
                         CalendarInMemory updatedCim = new CalendarInMemory(
                                 carID,
+                                txtAvailable.getText(),
                                 customerID,
-                                txtCustomer.getText(),
                                 txtRentFee.getText(),
                                 rentHourInput,
                                 startDate.format(formatter),
@@ -343,8 +342,8 @@ public class rentalInvoices extends JPanel implements ActionListener{
 
                         PreparedStatement pst = con.prepareStatement(sql);
 
-                        pst.setString(1, customerID);
-                        pst.setString(2, txtCustomer.getText());
+                        pst.setString(1, carID);
+                        pst.setString(2, customerID);
                         pst.setDouble(3, Double.parseDouble(txtRentFee.getText()));
                         
                         if (rentHourInput.isEmpty()) {
@@ -361,7 +360,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
                         pst.executeUpdate();
                                                 
                         model.setValueAt(carID, selectedRow, 0);
-                        model.setValueAt(txtCustomer.getText(), selectedRow, 1);
+                        model.setValueAt(customerID, selectedRow, 1);
                         model.setValueAt(txtRentFee.getText(), selectedRow, 2);
                         model.setValueAt(rentHourInput, selectedRow, 3);
                         model.setValueAt(txtDate.getText(), selectedRow, 4);
@@ -371,15 +370,11 @@ public class rentalInvoices extends JPanel implements ActionListener{
                 
                         isEditing = false;
                         table.clearSelection();
-                        txtCustomer.setText("");
                         txtRentFee.setText("");
                         txtRentHour.setText("");
                         txtDate.setText("");
                         txtDueDate.setText("");
                         btnAdd.setEnabled(true);
-                } else {
-                JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Update", JOptionPane.ERROR_MESSAGE);
-            }
                 } catch(DateTimeParseException ex){
                 JOptionPane.showMessageDialog(this, "Invalid date format! please use MM/dd/yyyy.", "Error", JOptionPane.ERROR_MESSAGE);
             } catch (NumberFormatException ex) {
@@ -395,8 +390,8 @@ public class rentalInvoices extends JPanel implements ActionListener{
             }
         } else if (e.getSource() == btnAdd) {
             String carId = cmbVehicle.getSelectedItem().toString();
-            String customerID = txtAvailable.getText();
-            String customerName = txtCustomer.getText();
+            String customerId = txtAvailable.getText();
+            String customerName = cmbCustomer.getSelectedItem().toString();
             String rentFee = txtRentFee.getText();
             String rentHour = txtRentHour.getText();
             String startDateStr = txtDate.getText();
@@ -426,7 +421,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
                 
                 availableManager record = new availableManager(
                         carId, 
-                        customerID, 
+                        customerId, 
                         customerName, 
                         rentFee,
                         rentHour,
@@ -435,10 +430,9 @@ public class rentalInvoices extends JPanel implements ActionListener{
                 );
             rentalList.add(record);
             
-            model.addRow(new Object[]{
-                carId, 
-                        customerID, 
-                        customerName, 
+            model.addRow(new Object[] {
+                carId,
+                customerName, 
                         rentFee,
                         rentHour,
                         startDate.format(formatter), 
@@ -450,15 +444,13 @@ public class rentalInvoices extends JPanel implements ActionListener{
 
                 try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
 
-//                    pst.setString(1, carID);
-                    pst.setString(2, customerID);
+                    pst.setString(1, carId);
+                    pst.setString(2, customerId);
                     pst.setString(3, customerName);
                     pst.setDouble(4, Double.parseDouble(rentFee));
 
-                    // Safely handle empty input for an integer database column
                     if (rentHour.isEmpty()) {
-                        pst.setNull(5, java.sql.Types.INTEGER); // Saves as NULL in DB for daily rentals
-                        // ALTERNATIVE: pst.setInt(5, 0);       // Use this if your DB doesn't allow NULLs
+                        pst.setNull(5, java.sql.Types.INTEGER);
                     } else {
                         pst.setInt(5, Integer.parseInt(rentHour));
                     }  
@@ -491,7 +483,6 @@ public class rentalInvoices extends JPanel implements ActionListener{
                 });
                 
                 txtAvailable.setText("");
-                txtCustomer.setText("");
                 txtRentFee.setText("");
                 txtRentHour.setText("");
                 txtDate.setText("");
@@ -636,8 +627,8 @@ public class rentalInvoices extends JPanel implements ActionListener{
                 boolean available
                         = availability.equalsIgnoreCase("Yes");
 
-//                cmbAvailable.setEnabled(available);
-                txtCustomer.setEnabled(available);
+//                cmbVehicle.setEnabled(available);
+//                cmbCustomer.setEnabled(available);
                 txtRentFee.setEnabled(available);
                 txtRentHour.setEnabled(available);
                 txtDate.setEnabled(available);
@@ -682,12 +673,12 @@ public class rentalInvoices extends JPanel implements ActionListener{
 
             ResultSet rs = pst.executeQuery();
 
-            if (rs.next()) {
-
-                txtCustomer.setText(
-                        rs.getString("customer_name")
-                );
-            }
+//            if (rs.next()) {
+//
+//                txtCustomer.setText(
+//                        rs.getString("customer_name")
+//                );
+//            }
 
         } catch (Exception e) {
             e.printStackTrace();

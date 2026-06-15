@@ -21,22 +21,23 @@ import java.sql.ResultSet;
  */
 public class carRentals extends JPanel implements ActionListener{
     
-    private JLabel lblHeader, lblCarID, lblMake, lblModel, lblPrice;
+    private JLabel lblHeader, lblColor, lblMake, lblModel, lblPrice;
     private JButton btnAdd, btnEdit, btnDelete, btnCancel;
-    private JTextField txtCarID, txtMake, txtModel, txtPrice;
+    private JTextField txtColor, txtMake, txtModel, txtPrice;
     private JScrollPane scrollPane;
     private JTable table;
     private DefaultTableModel model;
     private static final String[] tblColumns = {
-            "CarRegNo",
+            "Car Color",
             "Car Make",
             "Car Model",
             "Rental Price",
             "Status"
         };
     private JPanel panel;
-    private static ArrayList<carManager> rentalList = new ArrayList<>();
-    
+    private static ArrayList<carManager> carList = new ArrayList<>();
+    private boolean isEditing = false;
+
     carRentals() {
         
         setSize(1370, 730);
@@ -49,10 +50,10 @@ public class carRentals extends JPanel implements ActionListener{
         lblHeader.setBounds(350, 50, 200, 30);
         add(lblHeader);
 
-        lblCarID = new JLabel("Car ID ");
-        lblCarID.setForeground(Color.BLUE);
-        lblCarID.setBounds(400, 130, 100, 40);
-        add(lblCarID);
+        lblColor = new JLabel("Car Color ");
+        lblColor.setForeground(Color.BLUE);
+        lblColor.setBounds(400, 130, 100, 40);
+        add(lblColor);
 
         lblMake = new JLabel("Make ");
         lblMake.setForeground(Color.BLUE);
@@ -69,10 +70,10 @@ public class carRentals extends JPanel implements ActionListener{
         lblPrice.setBounds(400, 310, 100, 40);
         add(lblPrice);
 
-        txtCarID = new JTextField("000001");
-        txtCarID.setBackground(new Color(240, 240, 244));
-        txtCarID.setBounds(550, 130, 200, 40);
-        add(txtCarID);
+        txtColor = new JTextField();
+        txtColor.setBackground(new Color(240, 240, 244));
+        txtColor.setBounds(550, 130, 200, 40);
+        add(txtColor);
 
         txtMake = new JTextField("Ex. Toyota");
         txtMake.setBackground(new Color(240, 240, 244));
@@ -115,7 +116,7 @@ public class carRentals extends JPanel implements ActionListener{
         
         model = new DefaultTableModel(tblColumns, 0);
         table = new JTable(model);
-//        loadTableData() ;
+        loadTableData() ;
         scrollPane = new JScrollPane(table);
         scrollPane.setBackground(new Color(177, 218, 220));
         scrollPane.setBounds(800, 130, 500, 500);
@@ -136,7 +137,7 @@ public class carRentals extends JPanel implements ActionListener{
         btnDelete.setVisible(false);
         btnEdit.setVisible(false);
         btnAdd.setVisible(false);
-        lblCarID.setVisible(false);
+        lblColor.setVisible(false);
         lblHeader.setVisible(false);
         lblMake.setVisible(false);
         lblModel.setVisible(false);
@@ -144,7 +145,7 @@ public class carRentals extends JPanel implements ActionListener{
         txtPrice.setVisible(false);
         txtModel.setVisible(false);
         txtMake.setVisible(false);
-        txtCarID.setVisible(false);
+        txtColor.setVisible(false);
     }
     
     public void showCarRentals() {
@@ -153,7 +154,7 @@ public class carRentals extends JPanel implements ActionListener{
         btnDelete.setVisible(true);
         btnEdit.setVisible(true);
         btnAdd.setVisible(true);
-        lblCarID.setVisible(true);
+        lblColor.setVisible(true);
         lblHeader.setVisible(true);
         lblMake.setVisible(true);
         lblModel.setVisible(true);
@@ -161,14 +162,14 @@ public class carRentals extends JPanel implements ActionListener{
         txtPrice.setVisible(true);
         txtModel.setVisible(true);
         txtMake.setVisible(true);
-        txtCarID.setVisible(true);
+        txtColor.setVisible(true);
         
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnCancel) {
-            txtCarID.setText("");
+            txtColor.setText("");
             txtMake.setText("");
             txtModel.setText("");
             txtPrice.setText("");
@@ -220,7 +221,22 @@ public class carRentals extends JPanel implements ActionListener{
             int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {
 
-                try {
+                if (!isEditing) {
+                    isEditing = true;
+                    
+                    txtColor.setText(
+                            model.getValueAt(selectedRow, 0).toString());
+                    txtMake.setText(
+                            model.getValueAt(selectedRow, 1).toString());
+                    txtModel.setText(
+                            model.getValueAt(selectedRow, 2).toString());
+                    txtPrice.setText(
+                            model.getValueAt(selectedRow, 3).toString());
+                    btnAdd.setEnabled(false);
+                    JOptionPane.showMessageDialog(null, "You can now edit the fields. Click Edit again to save.");
+                    } else {
+
+                    try {
                     
                     String carID = model.getValueAt(selectedRow, 0).toString();
 
@@ -249,17 +265,16 @@ public class carRentals extends JPanel implements ActionListener{
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Error updating car!", "Update", JOptionPane.ERROR_MESSAGE);
                 }
+                }
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnAdd) {
-            String carId = txtCarID.getText();
+            String carColor = txtColor.getText();
             String brandMake = txtMake.getText();
             String carModel = txtModel.getText();
             String rentalPrice = txtPrice.getText();
-                double cost = 0.0;
-//            try {
-//                cost = Double.parseDouble(rentalPrice);
+                double price = 0.0;
                         
 //                carManager record = new carManager(
 //                        carId,
@@ -312,17 +327,20 @@ public class carRentals extends JPanel implements ActionListener{
 
                 PreparedStatement pst = con.prepareStatement(sql);
 
-                pst.setString(1, carId);
+                pst.setString(1, carColor);
                 pst.setString(2, brandMake);
                 pst.setString(3, carModel);
                 pst.setDouble(4, Double.parseDouble(rentalPrice));
 
                 pst.executeUpdate();
 
-            if (!(carId.isEmpty() || brandMake.isEmpty() || carModel.isEmpty() || rentalPrice.isEmpty())) {
-                
+            if (!(carColor.isEmpty() || brandMake.isEmpty() || carModel.isEmpty() || rentalPrice.isEmpty())) {
+
+            try {
+                price = Double.parseDouble(rentalPrice);
+
                 model.addRow(new Object[]{
-                    carId,
+                    carColor,
                     brandMake,
                     carModel,
                     rentalPrice
@@ -333,11 +351,15 @@ public class carRentals extends JPanel implements ActionListener{
                         "Car Added Successfully!"
                 );
 
-                txtCarID.setText("");
+                txtColor.setText("");
                 txtMake.setText("");
                 txtModel.setText("");
                 txtPrice.setText("");
-                } else {
+                } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "Please enter a valid numeric rent Price.", "Add", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            } else {
                 JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Add", JOptionPane.ERROR_MESSAGE);
             }
 
