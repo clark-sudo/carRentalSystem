@@ -21,11 +21,9 @@ import java.sql.ResultSet;
  */
 public class carRentals extends JPanel implements ActionListener{
     
-    private JLabel lblHeader, lblCarID, lblMake, lblModel, lblAvailable, lblPrice;
+    private JLabel lblHeader, lblCarID, lblMake, lblModel, lblPrice;
     private JButton btnAdd, btnEdit, btnDelete, btnCancel;
     private JTextField txtCarID, txtMake, txtModel, txtPrice;
-    private JComboBox<String> cmbAvailable;
-    protected static final String[] confirmation = {"Yes", "No"};
     private JScrollPane scrollPane;
     private JTable table;
     private DefaultTableModel model;
@@ -34,7 +32,7 @@ public class carRentals extends JPanel implements ActionListener{
             "Car Make",
             "Car Model",
             "Rental Price",
-            "Available"
+            "Status"
         };
     private JPanel panel;
     private static ArrayList<carManager> rentalList = new ArrayList<>();
@@ -71,11 +69,6 @@ public class carRentals extends JPanel implements ActionListener{
         lblPrice.setBounds(400, 310, 100, 40);
         add(lblPrice);
 
-        lblAvailable = new JLabel("Available ");
-        lblAvailable.setForeground(Color.BLUE);
-        lblAvailable.setBounds(400, 370, 100, 40);
-        add(lblAvailable);
-
         txtCarID = new JTextField("000001");
         txtCarID.setBackground(new Color(240, 240, 244));
         txtCarID.setBounds(550, 130, 200, 40);
@@ -95,10 +88,6 @@ public class carRentals extends JPanel implements ActionListener{
         txtPrice.setBackground(new Color(240, 240, 244));
         txtPrice.setBounds(550, 310, 200, 40);
         add(txtPrice);
-
-        cmbAvailable = new JComboBox<>(confirmation);
-        cmbAvailable.setBounds(550, 370, 200, 40);
-        add(cmbAvailable);
 
         btnAdd = new JButton("Add");
         btnAdd.setBackground(new Color(0, 130, 120));
@@ -147,7 +136,6 @@ public class carRentals extends JPanel implements ActionListener{
         btnDelete.setVisible(false);
         btnEdit.setVisible(false);
         btnAdd.setVisible(false);
-        lblAvailable.setVisible(false);
         lblCarID.setVisible(false);
         lblHeader.setVisible(false);
         lblMake.setVisible(false);
@@ -157,7 +145,6 @@ public class carRentals extends JPanel implements ActionListener{
         txtModel.setVisible(false);
         txtMake.setVisible(false);
         txtCarID.setVisible(false);
-        cmbAvailable.setVisible(false);
     }
     
     public void showCarRentals() {
@@ -166,7 +153,6 @@ public class carRentals extends JPanel implements ActionListener{
         btnDelete.setVisible(true);
         btnEdit.setVisible(true);
         btnAdd.setVisible(true);
-        lblAvailable.setVisible(true);
         lblCarID.setVisible(true);
         lblHeader.setVisible(true);
         lblMake.setVisible(true);
@@ -176,7 +162,6 @@ public class carRentals extends JPanel implements ActionListener{
         txtModel.setVisible(true);
         txtMake.setVisible(true);
         txtCarID.setVisible(true);
-        cmbAvailable.setVisible(true);
         
     }
 
@@ -232,7 +217,6 @@ public class carRentals extends JPanel implements ActionListener{
                 JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnEdit) {
-            String availability = cmbAvailable.getSelectedItem().toString();
             int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {
 
@@ -250,8 +234,7 @@ public class carRentals extends JPanel implements ActionListener{
                     pst.setString(1, txtMake.getText());
                     pst.setString(2, txtModel.getText());
                     pst.setDouble(3, Double.parseDouble(txtPrice.getText()));
-                    pst.setString(4, availability);
-                    pst.setString(5, carID);
+                    pst.setString(4, carID);
 
                     pst.executeUpdate();
 
@@ -259,7 +242,6 @@ public class carRentals extends JPanel implements ActionListener{
                     model.setValueAt(txtMake.getText(), selectedRow, 1);
                     model.setValueAt(txtModel.getText(), selectedRow, 2);
                     model.setValueAt(txtPrice.getText(), selectedRow, 3);
-                    model.setValueAt(availability, selectedRow, 4);
 
                     JOptionPane.showMessageDialog(null, "Car Updated Successfully!");
 
@@ -275,7 +257,6 @@ public class carRentals extends JPanel implements ActionListener{
             String brandMake = txtMake.getText();
             String carModel = txtModel.getText();
             String rentalPrice = txtPrice.getText();
-            String availability = cmbAvailable.getSelectedItem().toString();
                 double cost = 0.0;
 //            try {
 //                cost = Double.parseDouble(rentalPrice);
@@ -335,7 +316,6 @@ public class carRentals extends JPanel implements ActionListener{
                 pst.setString(2, brandMake);
                 pst.setString(3, carModel);
                 pst.setDouble(4, Double.parseDouble(rentalPrice));
-                pst.setString(5, availability);
 
                 pst.executeUpdate();
 
@@ -345,8 +325,7 @@ public class carRentals extends JPanel implements ActionListener{
                     carId,
                     brandMake,
                     carModel,
-                    rentalPrice,
-                    availability
+                    rentalPrice
                 });
 
                 JOptionPane.showMessageDialog(

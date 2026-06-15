@@ -25,11 +25,12 @@ import javax.swing.table.DefaultTableModel;
  */
 public class rentalInvoices extends JPanel implements ActionListener{
     
-    private JLabel lblHeader, lblCarID, lblAvailable, lblCustomer, lblRentFee, lblRentHour, lblDate, lblDueDate;
+    private JLabel lblHeader, lblVehicle, lblAvailable, lblCustomer, lblRentFee, lblRentHour, lblDate, lblDueDate;
     private JButton btnAdd, btnEdit, btnDelete, btnCancel;
     private JTextField txtAvailable, txtCustomer, txtRentFee, txtRentHour, txtDate, txtDueDate;
-    private JComboBox<String> cmbCarID;
-    protected static final String[] confirmation = {"1", "2"};
+    private JComboBox<String> cmbVehicle, cmbCustomer;
+    protected static final String[] cars = {"1", "2"};
+    protected static final String[] customers = {"1", "2"};
     private JPanel panel;
     private JTable table;
     private JScrollPane scrollPane;
@@ -56,10 +57,10 @@ public class rentalInvoices extends JPanel implements ActionListener{
         lblHeader.setBounds(350, 50, 100, 30);
         add(lblHeader);
         
-        lblCarID = new JLabel("Car ID ");
-        lblCarID.setForeground(Color.BLUE);
-        lblCarID.setBounds(400, 130, 100, 40);
-        add(lblCarID);
+        lblVehicle = new JLabel("Car ID ");
+        lblVehicle.setForeground(Color.BLUE);
+        lblVehicle.setBounds(400, 130, 100, 40);
+        add(lblVehicle);
         
         lblAvailable = new JLabel("Available ");
         lblAvailable.setForeground(Color.BLUE);
@@ -91,9 +92,9 @@ public class rentalInvoices extends JPanel implements ActionListener{
         lblDueDate.setBounds(400, 490, 100, 40);
         add(lblDueDate);
         
-        cmbCarID = new JComboBox<>(confirmation);
-        cmbCarID.setBounds(550, 130, 200, 40);
-        add(cmbCarID);
+        cmbVehicle = new JComboBox<>(cars);
+        cmbVehicle.setBounds(550, 130, 200, 40);
+        add(cmbVehicle);
         
         txtAvailable = new JTextField();
         txtAvailable.setBackground(new Color(240, 240, 244));
@@ -173,7 +174,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
         btnDelete.setVisible(false);
         btnEdit.setVisible(false);
         btnAdd.setVisible(false);
-        lblCarID.setVisible(false);
+        lblVehicle.setVisible(false);
         lblCustomer.setVisible(false);
         lblAvailable.setVisible(false);
         lblDate.setVisible(false);
@@ -187,7 +188,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
         txtDueDate.setVisible(false);
         txtRentFee.setVisible(false);
         txtRentHour.setVisible(false);
-        cmbCarID.setVisible(false);
+        cmbVehicle.setVisible(false);
     }
     
     public void showRentalInvoice() {
@@ -196,7 +197,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
         btnDelete.setVisible(true);
         btnEdit.setVisible(true);
         btnAdd.setVisible(true);
-        lblCarID.setVisible(true);
+        lblVehicle.setVisible(true);
         lblCustomer.setVisible(true);
         lblAvailable.setVisible(true);
         lblDate.setVisible(true);
@@ -210,7 +211,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
         txtDueDate.setVisible(true);
         txtRentFee.setVisible(true);
         txtRentHour.setVisible(true);
-        cmbCarID.setVisible(true);
+        cmbVehicle.setVisible(true);
     }
 
     @Override
@@ -280,7 +281,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
                 if (!isEditing) {
                     isEditing = true;
                     
-                    cmbCarID.setSelectedItem(
+                    cmbVehicle.setSelectedItem(
                             model.getValueAt(selectedRow, 0) );
                     txtCustomer.setText(
                             model.getValueAt(selectedRow, 1).toString());
@@ -311,7 +312,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
                     }
                     
                     try {
-                        String carID = cmbCarID.getSelectedItem().toString();
+                        String carID = cmbVehicle.getSelectedItem().toString();
 //                        String customerID = cmbAvailable.getSelectedItem().toString();
                         double fee = 0.0;
                         
@@ -393,7 +394,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnAdd) {
-            String carId = cmbCarID.getSelectedItem().toString();
+            String carId = cmbVehicle.getSelectedItem().toString();
             String customerID = txtAvailable.getText();
             String customerName = txtCustomer.getText();
             String rentFee = txtRentFee.getText();
@@ -432,6 +433,17 @@ public class rentalInvoices extends JPanel implements ActionListener{
                         startDate.format(formatter), 
                         dueDate.format(formatter)
                 );
+            rentalList.add(record);
+            
+            model.addRow(new Object[]{
+                carId, 
+                        customerID, 
+                        customerName, 
+                        rentFee,
+                        rentHour,
+                        startDate.format(formatter), 
+                        dueDate.format(formatter)
+            });
                 
                 String sql = "INSERT INTO rentals (car_id, customer_id, customer_name, rental_fee, rental_hour, start_date, due_date, total_price) "
                         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -530,7 +542,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
 
     private void loadCarIDs() {
 
-        cmbCarID.removeAllItems();
+        cmbVehicle.removeAllItems();
 
         try {
 
@@ -545,7 +557,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
 
             while (rs.next()) {
 
-                cmbCarID.addItem(
+                cmbVehicle.addItem(
                         rs.getString("car_id")
                 );
             }
@@ -589,7 +601,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
         }
 
         String selectedCarID
-                = (String) cmbCarID.getSelectedItem();
+                = (String) cmbVehicle.getSelectedItem();
 
         if (selectedCarID == null) {
             txtRentFee.setText("");
@@ -680,5 +692,20 @@ public class rentalInvoices extends JPanel implements ActionListener{
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    private void MaintenanceRecord() {
+    model.setRowCount(0);
+
+    for(availableManager record : rentalList) {
+        model.addRow(new Object[]{
+                    record.getCarID(),
+                    record.getCustomerID(),
+                    record.getCustomerName(),
+                    record.getRentFee(),
+                    record.getRentHour(),
+                    record.getStartDate(),
+                    record.getDueDate()
+        });
+    }
     }
 }
