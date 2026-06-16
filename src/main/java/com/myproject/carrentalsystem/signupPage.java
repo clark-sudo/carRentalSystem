@@ -10,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import javax.swing.*;
 
@@ -22,8 +21,7 @@ public class signupPage extends JFrame implements ActionListener{
     
     private JLabel lblHeader, lblUsername, lblPassword;
     private JButton btnCreate, btnReset, btnSignin;
-    private JTextField txtUsername;
-    private JPasswordField pssPassword;
+    private JTextField txtUsername, txtPassword;
     
     protected static final ArrayList<String> screenSizes = new ArrayList<>(){{
         add("Small screen");
@@ -73,9 +71,9 @@ public class signupPage extends JFrame implements ActionListener{
         txtUsername.setBounds(350, 200, 200, 40);
         add(txtUsername);
         
-        pssPassword = new JPasswordField("********");
-        pssPassword.setBounds(350, 260, 200, 40);
-        add(pssPassword);
+        txtPassword = new JTextField("********");
+        txtPassword.setBounds(350, 260, 200, 40);
+        add(txtPassword);
         
         btnCreate = new JButton("SignIn");
         btnCreate.setBackground(new Color(66, 133, 244));
@@ -103,15 +101,8 @@ public class signupPage extends JFrame implements ActionListener{
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnCreate) {
-            dispose();
-            loginPage lp = new loginPage();
-            lp.setVisible(true);
-        } else if (e.getSource() == btnReset) {
-            txtUsername.setText("");
-            pssPassword.setText("");
-        } else if (e.getSource() == btnSignin) {
             String username = txtUsername.getText();
-            String password = pssPassword.getText();
+            String password = txtPassword.getText();
             String sql = "INSERT INTO users (username, password) "
                     + "VALUES (?, ?)";
             
@@ -119,32 +110,25 @@ public class signupPage extends JFrame implements ActionListener{
                 
                 pst.setString(1, username);
                 pst.setString(2, password);
+                pst.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Account created successfully!");
+                
+            dispose();
+            loginPage lp = new loginPage();
+            lp.setVisible(true);
             } catch (Exception ex) {
                 ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Database Error: " + ex.getMessage());
                 return;
             }
+        } else if (e.getSource() == btnReset) {
+            txtUsername.setText("");
+            txtPassword.setText("");
+            JOptionPane.showMessageDialog(null, "Text Fields Cleared!");
+        } else if (e.getSource() == btnSignin) {
             dispose();
             loginPage lp = new loginPage();
             lp.setVisible(true);
-        }
-    }
-    
-    private void loadUsers() {
-        
-        try {
-            
-            Connection con = DBConnection.getConnection();
-            
-            String sql =
-                    "SELECT username FROM users";
-            
-            PreparedStatement pst = con.prepareStatement(sql);
-            
-            ResultSet rs = pst.executeQuery();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

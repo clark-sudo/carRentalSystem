@@ -464,13 +464,13 @@ public class rentalInvoices extends JPanel implements ActionListener{
                         JOptionPane.showMessageDialog(null, "Rental Saved Successfully to Database!");
                     } else {
                         JOptionPane.showMessageDialog(null, "Database rejected insertion. Check constraints.");
-                        return; // Stop UI update if DB write failed
+                        return;
                     }
 
                     } catch (Exception ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Database Error: " + ex.getMessage());
-                    return; // Stop UI update if DB write failed
+                    return;
                 }
 
                 model.addRow(new Object[]{

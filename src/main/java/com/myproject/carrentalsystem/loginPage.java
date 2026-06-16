@@ -8,7 +8,9 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.swing.*;
 
 /**
@@ -79,18 +81,36 @@ public class loginPage extends JFrame implements ActionListener{
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnLogin) {
             String username = txtUsername.getText();
-            String password = pssPassword.getText();
-            if (username.equals(existingUsername) && password.equals(existingPassword) ) {
+            String password = String.valueOf(pssPassword.getPassword());
+            String sql = "SELECT * FROM users WHERE username = ?, AND password = ?";
+            
+            try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+                
+                pst.setString(1, username);
+                pst.setString(2, password);
+
+                ResultSet rs = pst.executeQuery();
+                
+                if (rs.next()) {
+                JOptionPane.showMessageDialog(null, "Account created successfully!");
+
             dispose();
             homePage hp = new homePage();
             hp.setVisible(true);
-            } else {
-                JOptionPane.showMessageDialog(this, "Invalid Username or Password.",
-                        "Wrong Credentials", JOptionPane.ERROR_MESSAGE);
+                } else {
+                JOptionPane.showMessageDialog(null,
+                        "Invalid Username or Password.",
+                        "Wrong Credentials",
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Database Error: " + ex.getMessage());
             }
         } else if (e.getSource() == btnReset) {
             txtUsername.setText("");
             pssPassword.setText("");
+            JOptionPane.showMessageDialog(null, "Text Fields Cleared!");
         } else if (e.getSource() == btnSignup) {
             dispose();
             signupPage sp = new signupPage();
