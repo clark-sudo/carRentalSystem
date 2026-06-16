@@ -102,14 +102,14 @@ public class signupPage extends JFrame implements ActionListener{
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == btnCreate) {
+        if (e.getSource() == btnSignin) {
             dispose();
             loginPage lp = new loginPage();
             lp.setVisible(true);
         } else if (e.getSource() == btnReset) {
             txtUsername.setText("");
             pssPassword.setText("");
-        } else if (e.getSource() == btnSignin) {
+        } else if (e.getSource() == btnCreate) {
             String username = txtUsername.getText();
             String password = pssPassword.getText();
             String sql = "INSERT INTO users (username, password) "
@@ -119,6 +119,8 @@ public class signupPage extends JFrame implements ActionListener{
                 
                 pst.setString(1, username);
                 pst.setString(2, password);
+                pst.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Account created successfully!");
             } catch (Exception ex) {
                 ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Database Error: " + ex.getMessage());
