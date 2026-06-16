@@ -234,37 +234,37 @@ public class carRentals extends JPanel implements ActionListener{
                             model.getValueAt(selectedRow, 3).toString());
                     btnAdd.setEnabled(false);
                     JOptionPane.showMessageDialog(null, "You can now edit the fields. Click Edit again to save.");
-                    } else {
-
+                }
+                
                     try {
                     
-                    String carID = model.getValueAt(selectedRow, 0).toString();
+                    String carID = model.getValueAt(selectedRow, 5).toString();
 
                     Connection con = DBConnection.getConnection();
 
                     String sql
-                            = "UPDATE cars SET make=?, model=?, rental_price=?, available=? WHERE car_id=?";
+                            = "UPDATE cars SET color=?, make=?, model=?, rental_price=? WHERE car_id=?";
 
                     PreparedStatement pst = con.prepareStatement(sql);
 
-                    pst.setString(1, txtMake.getText());
-                    pst.setString(2, txtModel.getText());
-                    pst.setDouble(3, Double.parseDouble(txtPrice.getText()));
-                    pst.setString(4, carID);
+                    pst.setString(1, txtColor.getText());
+                    pst.setString(2, txtMake.getText());
+                    pst.setString(3, txtModel.getText());
+                    pst.setDouble(4, Double.parseDouble(txtPrice.getText()));
+                    pst.setString(5, carID);
 
                     pst.executeUpdate();
 
-                    // update JTable ONLY (UI refresh)
-                    model.setValueAt(txtMake.getText(), selectedRow, 1);
-                    model.setValueAt(txtModel.getText(), selectedRow, 2);
-                    model.setValueAt(txtPrice.getText(), selectedRow, 3);
+                    model.setValueAt(txtColor.getText(), selectedRow, 1);
+                    model.setValueAt(txtMake.getText(), selectedRow, 2);
+                    model.setValueAt(txtModel.getText(), selectedRow, 3);
+                    model.setValueAt(txtPrice.getText(), selectedRow, 4);
 
                     JOptionPane.showMessageDialog(null, "Car Updated Successfully!");
 
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Error updating car!", "Update", JOptionPane.ERROR_MESSAGE);
-                }
                 }
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
@@ -276,6 +276,9 @@ public class carRentals extends JPanel implements ActionListener{
             String rentalPrice = txtPrice.getText();
                 double price = 0.0;
                         
+for (int i = 1; i > 0; i++) {
+    int carId = i;
+}
 //                carManager record = new carManager(
 //                        carId,
 //                        brandMake,
@@ -316,14 +319,18 @@ public class carRentals extends JPanel implements ActionListener{
 //                });
 //            }
 //    }
+            if (!(carColor.isEmpty() || brandMake.isEmpty() || carModel.isEmpty() || rentalPrice.isEmpty())) {
+
+            try {
+                price = Double.parseDouble(rentalPrice);
 
             try {
                 Connection con = DBConnection.getConnection();
 
                 String sql
                         = "INSERT INTO cars "
-                        + "(car_id, make, model, rental_price, available) "
-                        + "VALUES (?, ?, ?, ?, ?)";
+                        + "(color, make, model, rental_price) "
+                        + "VALUES (?, ?, ?, ?)";
 
                 PreparedStatement pst = con.prepareStatement(sql);
 
@@ -333,11 +340,6 @@ public class carRentals extends JPanel implements ActionListener{
                 pst.setDouble(4, Double.parseDouble(rentalPrice));
 
                 pst.executeUpdate();
-
-            if (!(carColor.isEmpty() || brandMake.isEmpty() || carModel.isEmpty() || rentalPrice.isEmpty())) {
-
-            try {
-                price = Double.parseDouble(rentalPrice);
 
                 model.addRow(new Object[]{
                     carColor,
@@ -355,15 +357,7 @@ public class carRentals extends JPanel implements ActionListener{
                 txtMake.setText("");
                 txtModel.setText("");
                 txtPrice.setText("");
-                } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(null, "Please enter a valid numeric rent Price.", "Add", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            } else {
-                JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Add", JOptionPane.ERROR_MESSAGE);
-            }
-
-            } catch (Exception ex) {
+                } catch (Exception ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(
                         null,
@@ -371,6 +365,13 @@ public class carRentals extends JPanel implements ActionListener{
                         "Add",
                         JOptionPane.ERROR_MESSAGE
                 );
+            }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "Please enter a valid numeric rent Price.", "Add", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            } else {
+                JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Add", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -391,11 +392,12 @@ public class carRentals extends JPanel implements ActionListener{
             while (rs.next()) {
 
                 model.addRow(new Object[]{
-                    rs.getString("car_id"),
+                    rs.getString("color"),
                     rs.getString("make"),
                     rs.getString("model"),
                     rs.getDouble("rental_price"),
-                    rs.getString("available")
+                    rs.getString("available"),
+                    rs.getString("car_id")
                 });
             }
 

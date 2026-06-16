@@ -46,7 +46,7 @@ public class signupPage extends JFrame implements ActionListener{
         }
         
         setTitle("Car Rental");
-        setSize(700, 600);
+        setSize(650, 450);
         setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
@@ -59,38 +59,38 @@ public class signupPage extends JFrame implements ActionListener{
         
         lblUsername = new JLabel("Enter new Username: ", SwingConstants.RIGHT);
         lblUsername.setForeground(Color.BLUE);
-        lblUsername.setBounds(100, 200, 200, 40);
+        lblUsername.setBounds(100, 130, 200, 40);
         add(lblUsername);
         
         lblPassword = new JLabel("Enter new Password: ", SwingConstants.RIGHT);
         lblPassword.setForeground(Color.BLUE);
-        lblPassword.setBounds(100, 260, 200, 40);
+        lblPassword.setBounds(100, 190, 200, 40);
         add(lblPassword);
         
         txtUsername = new JTextField("Username");
-        txtUsername.setBounds(350, 200, 200, 40);
+        txtUsername.setBounds(350, 130, 200, 40);
         add(txtUsername);
         
         txtPassword = new JTextField("********");
-        txtPassword.setBounds(350, 260, 200, 40);
+        txtPassword.setBounds(350, 190, 200, 40);
         add(txtPassword);
         
         btnCreate = new JButton("SignIn");
         btnCreate.setBackground(new Color(66, 133, 244));
         btnCreate.setForeground(Color.white);
-        btnCreate.setBounds(230, 330, 80, 40);
+        btnCreate.setBounds(230, 260, 80, 40);
         add(btnCreate);
         
         btnReset = new JButton("Reset");  
         btnReset.setBackground(new Color(66, 133, 244));
         btnReset.setForeground(Color.white); 
-        btnReset.setBounds(400, 330, 80, 40);
+        btnReset.setBounds(400, 260, 80, 40);
         add(btnReset);
         
         btnSignin = new JButton("Already have an account?"); 
         btnSignin.setBackground(new Color(66, 133, 244));
         btnSignin.setForeground(Color.white);
-        btnSignin.setBounds(200, 400, 310, 40);
+        btnSignin.setBounds(200, 330, 310, 40);
         add(btnSignin);
         
         btnCreate.addActionListener(this);
@@ -106,25 +106,30 @@ public class signupPage extends JFrame implements ActionListener{
             String sql = "INSERT INTO users (username, password) "
                     + "VALUES (?, ?)";
             
+            if(!(username.isEmpty() || password.isEmpty())) {
+            
             try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
                 
                 pst.setString(1, username);
                 pst.setString(2, password);
                 pst.executeUpdate();
-                JOptionPane.showMessageDialog(null, "Account created successfully!");
+                JOptionPane.showMessageDialog(this, "Account created successfully!");
                 
             dispose();
             loginPage lp = new loginPage();
             lp.setVisible(true);
             } catch (Exception ex) {
                 ex.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "Database Error: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(this, "Database Error: " + ex.getMessage());
                 return;
+            }
+            } else {
+                JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "SignUp", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnReset) {
             txtUsername.setText("");
             txtPassword.setText("");
-            JOptionPane.showMessageDialog(null, "Text Fields Cleared!");
+            JOptionPane.showMessageDialog(this, "Text Fields Cleared!");
         } else if (e.getSource() == btnSignin) {
             dispose();
             loginPage lp = new loginPage();

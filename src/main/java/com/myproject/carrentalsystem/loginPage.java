@@ -79,7 +79,7 @@ public class loginPage extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnLogin) {
             String username = txtUsername.getText();
-            String password = String.valueOf(pssPassword.getPassword());
+            String password = pssPassword.getText();
             String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
             
             try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
@@ -90,13 +90,13 @@ public class loginPage extends JFrame implements ActionListener {
                 ResultSet rs = pst.executeQuery();
                 
                 if (rs.next()) {
-                JOptionPane.showMessageDialog(null, "Account created successfully!");
+                JOptionPane.showMessageDialog(this, "Account created successfully!");
 
             dispose();
             homePage hp = new homePage();
             hp.setVisible(true);
                 } else {
-                JOptionPane.showMessageDialog(null,
+                JOptionPane.showMessageDialog(this,
                         "Invalid Username or Password.",
                         "Wrong Credentials",
                         JOptionPane.ERROR_MESSAGE);
@@ -109,7 +109,7 @@ public class loginPage extends JFrame implements ActionListener {
         } else if (e.getSource() == btnReset) {
             txtUsername.setText("");
             pssPassword.setText("");
-            JOptionPane.showMessageDialog(null, "Text Fields Cleared!");
+            JOptionPane.showMessageDialog(this, "Text Fields Cleared!");
         } else if (e.getSource() == btnSignup) {
             dispose();
             signupPage sp = new signupPage();
