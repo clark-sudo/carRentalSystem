@@ -103,7 +103,7 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
         lblHeader.setBounds(350, 50, 200, 30);
         add(lblHeader);
         
-        lblVehicle = new JLabel("Car ID ");
+        lblVehicle = new JLabel("Vehicle ");
         lblVehicle.setForeground(Color.BLUE);
         lblVehicle.setBounds(400, 130, 100, 40);
         add(lblVehicle);
@@ -450,7 +450,8 @@ public class vehicleMaintenance extends JPanel implements ActionListener{
             
             Connection conn = connectToDatabase();
             if (conn != null) {
-                String sql = "INSERT INTO vehicle_maintenance (car_id, maintenance_type, description, cost, date) VALUES (?, ?, ?, ?, ?)";
+                String sql = "INSERT INTO vehicle_maintenance (car_id, maintenance_type, description, cost, date) "
+                        + "VALUES (?, ?, ?, ?, ?)";
                 
                 try {
                     PreparedStatement pst = conn.prepareStatement(sql);

@@ -8,6 +8,9 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import javax.swing.*;
 
@@ -22,8 +25,6 @@ public class signupPage extends JFrame implements ActionListener{
     private JTextField txtUsername;
     private JPasswordField pssPassword;
     
-    private String username = "admin";
-    private String password = "admin123";
     protected static final ArrayList<String> screenSizes = new ArrayList<>(){{
         add("Small screen");
         add("Medium screen");
@@ -109,9 +110,41 @@ public class signupPage extends JFrame implements ActionListener{
             txtUsername.setText("");
             pssPassword.setText("");
         } else if (e.getSource() == btnSignin) {
+            String username = txtUsername.getText();
+            String password = pssPassword.getText();
+            String sql = "INSERT INTO users (username, password) "
+                    + "VALUES (?, ?)";
+            
+            try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+                
+                pst.setString(1, username);
+                pst.setString(2, password);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Database Error: " + ex.getMessage());
+                return;
+            }
             dispose();
             loginPage lp = new loginPage();
             lp.setVisible(true);
+        }
+    }
+    
+    private void loadUsers() {
+        
+        try {
+            
+            Connection con = DBConnection.getConnection();
+            
+            String sql =
+                    "SELECT username FROM users";
+            
+            PreparedStatement pst = con.prepareStatement(sql);
+            
+            ResultSet rs = pst.executeQuery();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

@@ -111,7 +111,7 @@ public class rentalInvoices extends JPanel implements ActionListener{
         txtRentFee.setBackground(new Color(240, 240, 244));
         txtRentFee.setBounds(550, 310, 200, 40);
         add(txtRentFee);
-        txtRentFee.setEditable(false);
+//        txtRentFee.setEditable(false);
         
         txtRentHour = new JTextField();
         txtRentHour.setBackground(new Color(240, 240, 244));
@@ -439,24 +439,24 @@ public class rentalInvoices extends JPanel implements ActionListener{
                         dueDate.format(formatter)
             });
                 
-                String sql = "INSERT INTO rentals (car_id, customer_id, customer_name, rental_fee, rental_hour, start_date, due_date, total_price) "
+                String sql = "INSERT INTO rentals (car_id, customer_name, rental_fee, rental_hour, start_date, end_date, customer_id, total_price) "
                         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
                 try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
 
                     pst.setString(1, carId);
-                    pst.setString(2, customerId);
-                    pst.setString(3, customerName);
-                    pst.setDouble(4, Double.parseDouble(rentFee));
+                    pst.setString(2, customerName);
+                    pst.setDouble(3, Double.parseDouble(rentFee));
 
                     if (rentHour.isEmpty()) {
-                        pst.setNull(5, java.sql.Types.INTEGER);
+                        pst.setNull(4, java.sql.Types.INTEGER);
                     } else {
-                        pst.setInt(5, Integer.parseInt(rentHour));
+                        pst.setInt(4, Integer.parseInt(rentHour));
                     }  
                     
-                    pst.setDate(6, java.sql.Date.valueOf(startDate));
-                    pst.setDate(7, java.sql.Date.valueOf(dueDate));
+                    pst.setDate(5, java.sql.Date.valueOf(startDate));
+                    pst.setDate(6, java.sql.Date.valueOf(dueDate));
+                    pst.setString(7, customerName);
 
                     int rowsInserted = pst.executeUpdate();
 
