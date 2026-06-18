@@ -1,3 +1,4 @@
+package com.myproject.carrentalsystem;
 public class CarItem {
     private int carId;
     private String make;

@@ -19,8 +19,8 @@ import java.sql.ResultSet;
  *
  * @author hicru
  */
-public class carRentals extends JPanel implements ActionListener{
-    
+public class carRentals extends JPanel implements ActionListener {
+
     private JLabel lblHeader, lblColor, lblMake, lblModel, lblPrice;
     private JButton btnAdd, btnEdit, btnDelete, btnCancel;
     private JTextField txtColor, txtMake, txtModel, txtPrice;
@@ -28,18 +28,19 @@ public class carRentals extends JPanel implements ActionListener{
     private JTable table;
     private DefaultTableModel model;
     private static final String[] tblColumns = {
-            "Car Color",
-            "Car Make",
-            "Car Model",
-            "Rental Price",
-            "Status"
-        };
+        "Car ID",
+        "Car Color",
+        "Car Make",
+        "Car Model",
+        "Rental Price",
+        "Status"
+    };
     private JPanel panel;
     private static ArrayList<carManager> carList = new ArrayList<>();
     private boolean isEditing = false;
 
     carRentals() {
-        
+
         setSize(1370, 730);
         setLayout(null);
 //        setOpaque(false);
@@ -113,20 +114,20 @@ public class carRentals extends JPanel implements ActionListener{
         btnCancel.setForeground(Color.white);
         btnCancel.setBounds(650, 510, 100, 40);
         add(btnCancel);
-        
+
         model = new DefaultTableModel(tblColumns, 0);
         table = new JTable(model);
-        loadTableData() ;
+        loadTableData();
         scrollPane = new JScrollPane(table);
         scrollPane.setBackground(new Color(177, 218, 220));
         scrollPane.setBounds(800, 130, 500, 500);
         add(scrollPane);
-        
+
         panel = new JPanel();
         panel.setBackground(new Color(245, 245, 220));
         panel.setBounds(300, 0, 1070, 700);
         add(panel);
-        
+
         btnAdd.addActionListener(this);
         btnEdit.addActionListener(this);
         btnDelete.addActionListener(this);
@@ -147,7 +148,7 @@ public class carRentals extends JPanel implements ActionListener{
         txtMake.setVisible(false);
         txtColor.setVisible(false);
     }
-    
+
     public void showCarRentals() {
         scrollPane.setVisible(true);
         btnCancel.setVisible(true);
@@ -163,7 +164,7 @@ public class carRentals extends JPanel implements ActionListener{
         txtModel.setVisible(true);
         txtMake.setVisible(true);
         txtColor.setVisible(true);
-        
+
     }
 
     @Override
@@ -175,206 +176,220 @@ public class carRentals extends JPanel implements ActionListener{
             txtPrice.setText("");
             JOptionPane.showMessageDialog(null, "Text Fields Cleared!");
         } else if (e.getSource() == btnDelete) {
+
             int selectedRow = table.getSelectedRow();
-            if (selectedRow != -1) {
-            int choice = JOptionPane.showConfirmDialog(null, "Do you want to remove this from table?",
-                    "Confirmation", JOptionPane.YES_NO_OPTION);
-            if (choice == JOptionPane.YES_OPTION) {
-                
-                    try {
 
-                        String carID = model.getValueAt(selectedRow, 0).toString();
+            if (selectedRow == -1) {
 
-                        Connection con = DBConnection.getConnection();
-
-                        String sql = "DELETE FROM cars WHERE car_id = ?";
-
-                        PreparedStatement pst = con.prepareStatement(sql);
-                        pst.setString(1, carID);
-
-                        pst.executeUpdate();
-
-                        model.removeRow(selectedRow);
-
-                        JOptionPane.showMessageDialog(
-                                null,
-                                "Car Deleted Successfully!",
-                                "Warning",
-                                JOptionPane.WARNING_MESSAGE
-                        );
-
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(
-                                null,
-                                "Error deleting car!"
-                        );
-                    }
-                    
-                } else {
-                    JOptionPane.showMessageDialog(null, "Operation Canceled.");
-                }
-            } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Please select a row."
+                );
+                return;
             }
-        } else if (e.getSource() == btnEdit) {
-            int selectedRow = table.getSelectedRow();
-            if (selectedRow != -1) {
 
-                if (!isEditing) {
-                    isEditing = true;
-                    
-                    txtColor.setText(
-                            model.getValueAt(selectedRow, 0).toString());
-                    txtMake.setText(
-                            model.getValueAt(selectedRow, 1).toString());
-                    txtModel.setText(
-                            model.getValueAt(selectedRow, 2).toString());
-                    txtPrice.setText(
-                            model.getValueAt(selectedRow, 3).toString());
-                    btnAdd.setEnabled(false);
-                    JOptionPane.showMessageDialog(null, "You can now edit the fields. Click Edit again to save.");
-                }
-                
-                    try {
-                    
-                    String carID = model.getValueAt(selectedRow, 5).toString();
+            int choice = JOptionPane.showConfirmDialog(
+                    null,
+                    "Delete this car?",
+                    "Confirmation",
+                    JOptionPane.YES_NO_OPTION
+            );
 
-                    Connection con = DBConnection.getConnection();
+            if (choice == JOptionPane.YES_OPTION) {
+
+                try {
+
+                    String carID
+                            = model.getValueAt(selectedRow, 0).toString();
+
+                    Connection con
+                            = DBConnection.getConnection();
 
                     String sql
-                            = "UPDATE cars SET color=?, make=?, model=?, rental_price=? WHERE car_id=?";
+                            = "DELETE FROM cars WHERE car_id=?";
 
-                    PreparedStatement pst = con.prepareStatement(sql);
+                    PreparedStatement pst
+                            = con.prepareStatement(sql);
+
+                    pst.setString(1, carID);
+
+                    pst.executeUpdate();
+
+                    loadTableData();
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Car Deleted Successfully!"
+                    );
+
+                } catch (Exception ex) {
+
+                    ex.printStackTrace();
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Error deleting car!"
+                    );
+                }
+            }
+        } else if (e.getSource() == btnEdit) {
+
+            int selectedRow = table.getSelectedRow();
+
+            if (selectedRow == -1) {
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Please select a row."
+                );
+                return;
+            }
+
+            if (!isEditing) {
+
+                isEditing = true;
+
+                txtColor.setText(
+                        model.getValueAt(selectedRow, 1).toString());
+
+                txtMake.setText(
+                        model.getValueAt(selectedRow, 2).toString());
+
+                txtModel.setText(
+                        model.getValueAt(selectedRow, 3).toString());
+
+                txtPrice.setText(
+                        model.getValueAt(selectedRow, 4).toString());
+
+                btnAdd.setEnabled(false);
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Edit the fields then click Edit again."
+                );
+
+            } else {
+
+                try {
+
+                    String carID
+                            = model.getValueAt(selectedRow, 0).toString();
+
+                    Connection con
+                            = DBConnection.getConnection();
+
+                    String sql
+                            = "UPDATE cars "
+                            + "SET color=?, make=?, model=?, rental_price=? "
+                            + "WHERE car_id=?";
+
+                    PreparedStatement pst
+                            = con.prepareStatement(sql);
 
                     pst.setString(1, txtColor.getText());
                     pst.setString(2, txtMake.getText());
                     pst.setString(3, txtModel.getText());
-                    pst.setDouble(4, Double.parseDouble(txtPrice.getText()));
+                    pst.setDouble(4,
+                            Double.parseDouble(txtPrice.getText()));
                     pst.setString(5, carID);
 
                     pst.executeUpdate();
 
-                    model.setValueAt(txtColor.getText(), selectedRow, 1);
-                    model.setValueAt(txtMake.getText(), selectedRow, 2);
-                    model.setValueAt(txtModel.getText(), selectedRow, 3);
-                    model.setValueAt(txtPrice.getText(), selectedRow, 4);
+                    loadTableData();
 
-                    JOptionPane.showMessageDialog(null, "Car Updated Successfully!");
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Car Updated Successfully!"
+                    );
+
+                    isEditing = false;
+
+                    btnAdd.setEnabled(true);
+
+                    txtColor.setText("");
+                    txtMake.setText("");
+                    txtModel.setText("");
+                    txtPrice.setText("");
 
                 } catch (Exception ex) {
+
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "Error updating car!", "Update", JOptionPane.ERROR_MESSAGE);
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Error updating car!"
+                    );
                 }
-            } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnAdd) {
-            String carColor = txtColor.getText();
-            String brandMake = txtMake.getText();
-            String carModel = txtModel.getText();
-            String rentalPrice = txtPrice.getText();
-                double price = 0.0;
-                        
-for (int i = 1; i > 0; i++) {
-    int carId = i;
-}
-//                carManager record = new carManager(
-//                        carId,
-//                        brandMake,
-//                        carModel,
-//                        cost,
-//                        availability
-//                );
-//                rentalList.add(record);
-//                
-//            model.addRow(new Object[]{
-//                carId,
-//                brandMake,
-//                carModel,
-//                rentalPrice,
-//                availability
-//            });
-//            JOptionPane.showMessageDialog(null, "Car Added Successfully!");
-//            txtCarID.setText("");
-//            txtMake.setText("");
-//            txtModel.setText("");
-//            txtPrice.setText("");
-            
-//            } catch (NumberFormatException ex) {
-//                JOptionPane.showMessageDialog(null, "Please enter a valid numeric rent Price.", "Add", JOptionPane.ERROR_MESSAGE);
-//                return;
-//            }
 
-//        private void loadTableData(){
-//            model.setRowCount(0);
-//            
-//            for(carManager record : rentalList){
-//                model.addRow(new Object[]{
-//                    record.getCarRegNo(),
-//                    record.getCarMake(),
-//                    record.getCarModel(),
-//                    record.getRentalPrice(),
-//                    record.getAvailable()
-//                });
-//            }
-//    }
-            if (!(carColor.isEmpty() || brandMake.isEmpty() || carModel.isEmpty() || rentalPrice.isEmpty())) {
+            String carColor = txtColor.getText().trim();
+            String brandMake = txtMake.getText().trim();
+            String carModel = txtModel.getText().trim();
+            String rentalPrice = txtPrice.getText().trim();
+
+            if (carColor.isEmpty() || brandMake.isEmpty()
+                    || carModel.isEmpty() || rentalPrice.isEmpty()) {
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "All fields must be fulfilled.",
+                        "Add",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
 
             try {
-                price = Double.parseDouble(rentalPrice);
 
-            try {
+                double price = Double.parseDouble(rentalPrice);
+
                 Connection con = DBConnection.getConnection();
 
                 String sql
-                        = "INSERT INTO cars "
-                        + "(color, make, model, rental_price) "
-                        + "VALUES (?, ?, ?, ?)";
+                        = "INSERT INTO cars(color, make, model, rental_price, available) "
+                        + "VALUES (?, ?, ?, ?, 'Yes')";
 
                 PreparedStatement pst = con.prepareStatement(sql);
 
                 pst.setString(1, carColor);
                 pst.setString(2, brandMake);
                 pst.setString(3, carModel);
-                pst.setDouble(4, Double.parseDouble(rentalPrice));
+                pst.setDouble(4, price);
 
                 pst.executeUpdate();
-
-                model.addRow(new Object[]{
-                    carColor,
-                    brandMake,
-                    carModel,
-                    rentalPrice
-                });
 
                 JOptionPane.showMessageDialog(
                         null,
                         "Car Added Successfully!"
                 );
 
+                loadTableData();
+
                 txtColor.setText("");
                 txtMake.setText("");
                 txtModel.setText("");
                 txtPrice.setText("");
-                } catch (Exception ex) {
-                ex.printStackTrace();
+
+            } catch (NumberFormatException ex) {
+
                 JOptionPane.showMessageDialog(
                         null,
-                        "Error saving car!",
-                        "Add",
-                        JOptionPane.ERROR_MESSAGE
+                        "Rental price must be numeric."
                 );
-            }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(null, "Please enter a valid numeric rent Price.", "Add", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            } else {
-                JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Add", JOptionPane.ERROR_MESSAGE);
+
+            } catch (Exception ex) {
+
+                ex.printStackTrace();
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Error saving car!"
+                );
             }
         }
     }
+
     private void loadTableData() {
 
         model.setRowCount(0);
@@ -392,12 +407,12 @@ for (int i = 1; i > 0; i++) {
             while (rs.next()) {
 
                 model.addRow(new Object[]{
+                    rs.getInt("car_id"),
                     rs.getString("color"),
                     rs.getString("make"),
                     rs.getString("model"),
                     rs.getDouble("rental_price"),
-                    rs.getString("available"),
-                    rs.getString("car_id")
+                    rs.getString("available")
                 });
             }
 
