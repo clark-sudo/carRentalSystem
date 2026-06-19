@@ -30,8 +30,6 @@ public class rentalInvoices extends JPanel implements ActionListener {
     private JTextField txtAvailable, txtRentFee, txtRentHour, txtDate, txtDueDate;
     private JComboBox<CarItem> cmbVehicle;
     private JComboBox<String> cmbCustomer;
-    protected static final String[] cars = {"1", "2"};
-    protected static final String[] customers = {"1", "2"};
     private JPanel panel;
     private JTable table;
     private JScrollPane scrollPane;
@@ -70,7 +68,7 @@ public class rentalInvoices extends JPanel implements ActionListener {
 
         lblCustomer = new JLabel("Customer Name ");
         lblCustomer.setForeground(Color.BLUE);
-        lblCustomer.setBounds(400, 250, 100, 40);
+        lblCustomer.setBounds(400, 250, 120, 40);
         add(lblCustomer);
 
         lblRentFee = new JLabel("Rental Fee ");
@@ -93,28 +91,32 @@ public class rentalInvoices extends JPanel implements ActionListener {
         lblDueDate.setBounds(400, 490, 100, 40);
         add(lblDueDate);
 
+        // Vehicle dropdown — loads ALL cars from DB
         cmbVehicle = new JComboBox<>();
-        loadCars();
         cmbVehicle.setBounds(550, 130, 200, 40);
         add(cmbVehicle);
 
+        // Available field — read-only, driven by selected vehicle's status
         txtAvailable = new JTextField();
         txtAvailable.setBackground(new Color(240, 240, 244));
         txtAvailable.setBounds(550, 190, 200, 40);
-        add(txtAvailable);
         txtAvailable.setEditable(false);
+        add(txtAvailable);
 
-        cmbCustomer = new JComboBox<>(customers);
+        // Customer dropdown — loads all customers from DB
+        cmbCustomer = new JComboBox<>();
         cmbCustomer.setBackground(new Color(240, 240, 244));
         cmbCustomer.setBounds(550, 250, 200, 40);
         add(cmbCustomer);
 
+        // Rent fee — read-only, auto-filled from selected vehicle's rental_price
         txtRentFee = new JTextField();
         txtRentFee.setBackground(new Color(240, 240, 244));
         txtRentFee.setBounds(550, 310, 200, 40);
+        txtRentFee.setEditable(false);
         add(txtRentFee);
-//        txtRentFee.setEditable(false);
 
+        // Rental hour — only "12" or empty
         txtRentHour = new JTextField();
         txtRentHour.setBackground(new Color(240, 240, 244));
         txtRentHour.setBounds(550, 370, 200, 40);
@@ -167,574 +169,451 @@ public class rentalInvoices extends JPanel implements ActionListener {
         panel.setBounds(300, 0, 1070, 700);
         add(panel);
 
+        // When the user changes the vehicle selection, update Available and Rental Fee
+        cmbVehicle.addActionListener(e -> onVehicleSelected());
+
         btnAdd.addActionListener(this);
         btnEdit.addActionListener(this);
         btnDelete.addActionListener(this);
         btnCancel.addActionListener(this);
 
-        scrollPane.setVisible(false);
-        btnCancel.setVisible(false);
-        btnDelete.setVisible(false);
-        btnEdit.setVisible(false);
-        btnAdd.setVisible(false);
-        lblVehicle.setVisible(false);
-        lblCustomer.setVisible(false);
-        lblAvailable.setVisible(false);
-        lblDate.setVisible(false);
-        lblDueDate.setVisible(false);
-        lblHeader.setVisible(false);
-        lblRentFee.setVisible(false);
-        lblRentHour.setVisible(false);
-        cmbCustomer.setVisible(false);
-        txtAvailable.setVisible(false);
-        txtDate.setVisible(false);
-        txtDueDate.setVisible(false);
-        txtRentFee.setVisible(false);
-        txtRentHour.setVisible(false);
-        cmbVehicle.setVisible(false);
+        setAllVisible(false);
+    }
+
+    // -----------------------------------------------------------------------
+    // Visibility helpers
+    // -----------------------------------------------------------------------
+
+    private void setAllVisible(boolean visible) {
+        scrollPane.setVisible(visible);
+        btnCancel.setVisible(visible);
+        btnDelete.setVisible(visible);
+        btnEdit.setVisible(visible);
+        btnAdd.setVisible(visible);
+        lblVehicle.setVisible(visible);
+        lblCustomer.setVisible(visible);
+        lblAvailable.setVisible(visible);
+        lblDate.setVisible(visible);
+        lblDueDate.setVisible(visible);
+        lblHeader.setVisible(visible);
+        lblRentFee.setVisible(visible);
+        lblRentHour.setVisible(visible);
+        cmbCustomer.setVisible(visible);
+        txtAvailable.setVisible(visible);
+        txtDate.setVisible(visible);
+        txtDueDate.setVisible(visible);
+        txtRentFee.setVisible(visible);
+        txtRentHour.setVisible(visible);
+        cmbVehicle.setVisible(visible);
     }
 
     public void showRentalInvoice() {
-        scrollPane.setVisible(true);
-        btnCancel.setVisible(true);
-        btnDelete.setVisible(true);
-        btnEdit.setVisible(true);
-        btnAdd.setVisible(true);
-        lblVehicle.setVisible(true);
-        lblCustomer.setVisible(true);
-        lblAvailable.setVisible(true);
-        lblDate.setVisible(true);
-        lblDueDate.setVisible(true);
-        lblHeader.setVisible(true);
-        lblRentFee.setVisible(true);
-        lblRentHour.setVisible(true);
-        cmbCustomer.setVisible(true);
-        txtAvailable.setVisible(true);
-        txtDate.setVisible(true);
-        txtDueDate.setVisible(true);
-        txtRentFee.setVisible(true);
-        txtRentHour.setVisible(true);
-        cmbVehicle.setVisible(true);
+        loadCars();
+        loadCustomers();
+        setAllVisible(true);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == btnCancel) {
+    // -----------------------------------------------------------------------
+    // Load data from DB
+    // -----------------------------------------------------------------------
+
+    /**
+     * Loads ALL registered vehicles into the vehicle dropdown.
+     * Each entry shows: Color - Make - Model
+     * The CarItem also holds rental_price and available status.
+     */
+    private void loadCars() {
+        cmbVehicle.removeAllItems();
+        try {
+            Connection con = DBConnection.getConnection();
+            String sql = "SELECT car_id, color, make, model, rental_price, status FROM cars";
+            PreparedStatement pst = con.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                CarItem car = new CarItem(
+                        rs.getInt("car_id"),
+                        rs.getString("make"),
+                        rs.getString("model"),
+                        rs.getString("color"),
+                        rs.getDouble("rental_price"),
+                        rs.getString("status")
+                );
+                cmbVehicle.addItem(car);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Loads all customers into the customer dropdown.
+     * Shows customer names.
+     */
+    private void loadCustomers() {
+        cmbCustomer.removeAllItems();
+        try {
+            Connection con = DBConnection.getConnection();
+            String sql = "SELECT customer_name FROM customers ORDER BY customer_name";
+            PreparedStatement pst = con.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                cmbCustomer.addItem(rs.getString("customer_name"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Called whenever the vehicle combo selection changes.
+     * Updates the Available text field and auto-fills the rental fee.
+     * "Yes"          → car.available is "Available"
+     * "No"           → car.available is "Rented"
+     * "Maintenance"  → car.available is "Maintenance"
+     */
+    private void onVehicleSelected() {
+        if (isEditing) return;
+
+        CarItem selected = (CarItem) cmbVehicle.getSelectedItem();
+        if (selected == null) {
             txtAvailable.setText("");
             txtRentFee.setText("");
-            txtRentHour.setText("");
-            txtDate.setText("");
-            txtDueDate.setText("");
-            JOptionPane.showMessageDialog(null, "Text Fields Cleared!");
-        } else if (e.getSource() == btnDelete) {
-            int selectedRow = table.getSelectedRow();
-            if (selectedRow != -1) {
-                int choice = JOptionPane.showConfirmDialog(
-                        null,
-                        "Do you want to remove this from table?",
-                        "Confirmation",
-                        JOptionPane.YES_NO_OPTION
-                );
-                if (choice == JOptionPane.YES_OPTION) {
-
-                    try {
-
-                        String carID = model.getValueAt(selectedRow, 0).toString();
-                        String customerID = model.getValueAt(selectedRow, 1).toString();
-
-                        Connection con = DBConnection.getConnection();
-
-                        String sql = "DELETE FROM rentals WHERE car_id=? AND customer_id=?";
-
-                        PreparedStatement pst = con.prepareStatement(sql);
-                        pst.setString(1, carID);
-                        pst.setString(2, customerID);
-
-                        pst.executeUpdate();
-
-                        model.removeRow(selectedRow);
-
-                        JOptionPane.showMessageDialog(
-                                null,
-                                "Record Deleted Successfully!",
-                                "Warning",
-                                JOptionPane.WARNING_MESSAGE
-                        );
-
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "Error deleting record!");
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(null, "Operation Canceled.");
-                }
-            } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
-            }
-        } else if (e.getSource() == btnEdit) {
-            String available = txtAvailable.getText();
-            String rentFee = txtRentFee.getText();
-            String startDateStr = txtDate.getText();
-            String dueDateStr = txtDueDate.getText();
-            int selectedRow = table.getSelectedRow();
-            if (selectedRow != -1) {
-
-                if (!isEditing) {
-                    isEditing = true;
-
-                    cmbVehicle.setSelectedItem(
-                            model.getValueAt(selectedRow, 0));
-                    cmbCustomer.setSelectedItem(
-                            model.getValueAt(selectedRow, 1));
-                    txtRentFee.setText(
-                            model.getValueAt(selectedRow, 2).toString());
-                    txtRentHour.setText(
-                            model.getValueAt(selectedRow, 3).toString());
-                    txtDate.setText(
-                            model.getValueAt(selectedRow, 4).toString());
-                    txtDueDate.setText(
-                            model.getValueAt(selectedRow, 5).toString());
-
-//                    txtAvailable.setEnabled(true);
-//                    cmbCustomer.setEnabled(true);
-//                    txtRentFee.setEnabled(true);
-//                    txtRentHour.setEnabled(true);
-//                    txtDate.setEnabled(true);
-//                    txtDueDate.setEnabled(true);
-                    btnAdd.setEnabled(false);
-                    JOptionPane.showMessageDialog(null, "You can now edit the fields. Click Edit again to save.");
-
-                } else {
-                    String rentHourInput = txtRentHour.getText().trim();
-
-                    if (!rentHourInput.isEmpty() && !rentHourInput.equals("12")) {
-                        JOptionPane.showMessageDialog(this, "Rental Hour must be 12 or empty.", "Update", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    try {
-                        String carID = cmbVehicle.getSelectedItem().toString();
-                        String customerID = cmbCustomer.getSelectedItem().toString();
-                        double fee = 0.0;
-
-                        fee = Double.parseDouble(rentFee);
-
-                        LocalDate startDate = LocalDate.parse(txtDate.getText().trim(), formatter);
-                        LocalDate dueDate = LocalDate.parse(txtDueDate.getText().trim(), formatter);
-
-                        if (dueDate.isBefore(startDate)) {
-                            JOptionPane.showMessageDialog(this, "Due date cannot be before start date.", "Error", JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-
-                        CalendarInMemory updatedCim = new CalendarInMemory(
-                                carID,
-                                txtAvailable.getText(),
-                                customerID,
-                                txtRentFee.getText(),
-                                rentHourInput,
-                                startDate.format(formatter),
-                                dueDate.format(formatter)
-                        );
-
-                        Connection con = DBConnection.getConnection();
-
-                        String sql = "UPDATE rentals SET customer_id=?, customer_name=?, rental_fee=?, "
-                                + "rental_hour=?, start_date=?, due_date=?, total_price=? WHERE car_id=?";
-
-                        PreparedStatement pst = con.prepareStatement(sql);
-
-                        pst.setString(1, carID);
-                        pst.setString(2, customerID);
-                        pst.setDouble(3, Double.parseDouble(txtRentFee.getText()));
-
-                        if (rentHourInput.isEmpty()) {
-                            pst.setNull(4, java.sql.Types.INTEGER);
-                        } else {
-                            pst.setInt(4, Integer.parseInt(rentHourInput));
-                        }
-
-                        pst.setDate(5, java.sql.Date.valueOf(startDate));
-                        pst.setDate(6, java.sql.Date.valueOf(dueDate));
-
-                        pst.setString(8, carID);
-
-                        pst.executeUpdate();
-
-                        model.setValueAt(carID, selectedRow, 0);
-                        model.setValueAt(customerID, selectedRow, 1);
-                        model.setValueAt(txtRentFee.getText(), selectedRow, 2);
-                        model.setValueAt(rentHourInput, selectedRow, 3);
-                        model.setValueAt(txtDate.getText(), selectedRow, 4);
-                        model.setValueAt(txtDueDate.getText(), selectedRow, 5);
-
-                        JOptionPane.showMessageDialog(null, "Transaction Updated Successfully!");
-
-                        isEditing = false;
-                        table.clearSelection();
-                        txtRentFee.setText("");
-                        txtRentHour.setText("");
-                        txtDate.setText("");
-                        txtDueDate.setText("");
-                        btnAdd.setEnabled(true);
-                    } catch (DateTimeParseException ex) {
-                        JOptionPane.showMessageDialog(this, "Invalid date format! please use MM/dd/yyyy.", "Error", JOptionPane.ERROR_MESSAGE);
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(null, "Please enter a valid numeric fee.", "Update", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "Error updating record!");
-                    }
-                }
-            } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
-            }
-        } else if (e.getSource() == btnAdd) {
-            String carId = cmbVehicle.getSelectedItem().toString();
-            String customerId = txtAvailable.getText();
-            String customerName = cmbCustomer.getSelectedItem().toString();
-            String rentFee = txtRentFee.getText();
-            String rentHour = txtRentHour.getText();
-            String startDateStr = txtDate.getText();
-            String dueDateStr = txtDueDate.getText();
-            double fee = 0.0;
-
-            if (!rentHour.isEmpty() && !rentHour.equals("12")) {
-                JOptionPane.showMessageDialog(this, "Rental Hour must be 12 or leave it empty.");
-                return;
-            }
-
-            try {
-                fee = Double.parseDouble(rentFee);
-                LocalDate startDate = LocalDate.parse(startDateStr, formatter);
-                LocalDate dueDate = LocalDate.parse(dueDateStr, formatter);
-
-                if (dueDate.isBefore(startDate)) {
-                    JOptionPane.showMessageDialog(this, "Due date cannot be before start date.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                } else if (!(carId.isEmpty() || customerName.isEmpty() || rentFee.isEmpty())) {
-
-                    long daysBetween = ChronoUnit.DAYS.between(startDate, dueDate);
-                    if (daysBetween == 0 && rentHour.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Same day rental requires 12 hours to be entered.");
-                        return;
-                    }
-
-                    availableManager record = new availableManager(
-                            carId,
-                            customerId,
-                            customerName,
-                            rentFee,
-                            rentHour,
-                            startDate.format(formatter),
-                            dueDate.format(formatter)
-                    );
-                    rentalList.add(record);
-
-                    model.addRow(new Object[]{
-                        carId,
-                        customerName,
-                        rentFee,
-                        rentHour,
-                        startDate.format(formatter),
-                        dueDate.format(formatter)
-                    });
-
-                    String sql = "INSERT INTO rentals (car_id, customer_name, rental_fee, rental_hour, start_date, end_date, customer_id, total_price) "
-                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
-                    try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
-
-                        pst.setString(1, carId);
-                        pst.setString(2, customerName);
-                        pst.setDouble(3, Double.parseDouble(rentFee));
-
-                        if (rentHour.isEmpty()) {
-                            pst.setNull(4, java.sql.Types.INTEGER);
-                        } else {
-                            pst.setInt(4, Integer.parseInt(rentHour));
-                        }
-
-                        pst.setDate(5, java.sql.Date.valueOf(startDate));
-                        pst.setDate(6, java.sql.Date.valueOf(dueDate));
-                        pst.setString(7, customerName);
-
-                        int rowsInserted = pst.executeUpdate();
-
-                        if (rowsInserted > 0) {
-                            JOptionPane.showMessageDialog(null, "Rental Saved Successfully to Database!");
-                        } else {
-                            JOptionPane.showMessageDialog(null, "Database rejected insertion. Check constraints.");
-                            return;
-                        }
-
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "Database Error: " + ex.getMessage());
-                        return;
-                    }
-
-                    model.addRow(new Object[]{
-                        carId,
-                        customerName,
-                        rentFee,
-                        rentHour,
-                        startDate.format(formatter),
-                        dueDate.format(formatter)
-                    });
-
-                    txtAvailable.setText("");
-                    txtRentFee.setText("");
-                    txtRentHour.setText("");
-                    txtDate.setText("");
-                    txtDueDate.setText("");
-                } else {
-                    JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Add", JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (DateTimeParseException ex) {
-                JOptionPane.showMessageDialog(this, "Invalid date format! please use MM/dd/yyyy.", "Error", JOptionPane.ERROR_MESSAGE);
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(null, "Please enter a valid numeric fee.", "Add", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            return;
         }
 
+        // Map DB status to display label
+        String status = selected.getAvailable();
+        if (status == null) status = "";
+
+        switch (status.trim()) {
+            case "Available":
+                txtAvailable.setText("Yes");
+                break;
+            case "Rented":
+                txtAvailable.setText("No");
+                break;
+            case "Maintenance":
+                txtAvailable.setText("Maintenance");
+                break;
+            default:
+                txtAvailable.setText(status);
+                break;
+        }
+
+        // Auto-fill rental fee from the vehicle's registered price (not editable)
+        txtRentFee.setText(String.format("%.2f", selected.getRentalPrice()));
+
+        // Only allow adding if the car is Available
+        boolean canRent = "Available".equalsIgnoreCase(status.trim());
+        btnAdd.setEnabled(canRent);
+        txtRentHour.setEnabled(canRent);
+        txtDate.setEnabled(canRent);
+        txtDueDate.setEnabled(canRent);
+        cmbCustomer.setEnabled(canRent);
+
+        if (!canRent) {
+            String reason = "No".equals(txtAvailable.getText())
+                    ? "This car is currently rented."
+                    : "This car is currently under maintenance.";
+            JOptionPane.showMessageDialog(this, reason, "Unavailable", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     private void loadTableData() {
         model.setRowCount(0);
-
         try {
-
             Connection con = DBConnection.getConnection();
-
             String sql = "SELECT * FROM rentals";
-
             PreparedStatement pst = con.prepareStatement(sql);
-
             ResultSet rs = pst.executeQuery();
-
             while (rs.next()) {
-
                 model.addRow(new Object[]{
                     rs.getString("car_id"),
-                    rs.getString("customer_id"),
                     rs.getString("customer_name"),
                     rs.getDouble("rental_fee"),
                     rs.getString("rental_hour"),
                     rs.getString("start_date"),
-                    rs.getString("due_date"),
-                    rs.getDouble("total_price")
+                    rs.getString("end_date")
                 });
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void loadCarIDs() {
+   
 
-        cmbVehicle.removeAllItems();
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == btnCancel) {
+            clearFields();
+            JOptionPane.showMessageDialog(null, "Fields Cleared!");
 
+        } else if (e.getSource() == btnDelete) {
+            handleDelete();
+
+        } else if (e.getSource() == btnEdit) {
+            handleEdit();
+
+        } else if (e.getSource() == btnAdd) {
+            handleAdd();
+        }
+    }
+
+    private void clearFields() {
+        txtRentHour.setText("");
+        txtDate.setText("");
+        txtDueDate.setText("");
+        // Re-trigger vehicle selection to reset fee and availability
+        onVehicleSelected();
+    }
+
+    private void handleDelete() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        int choice = JOptionPane.showConfirmDialog(null,
+                "Do you want to remove this record?",
+                "Confirmation", JOptionPane.YES_NO_OPTION);
+        if (choice != JOptionPane.YES_OPTION) {
+            JOptionPane.showMessageDialog(null, "Operation Canceled.");
+            return;
+        }
         try {
-
+            String carID = model.getValueAt(selectedRow, 0).toString();
+            String customerName = model.getValueAt(selectedRow, 1).toString();
             Connection con = DBConnection.getConnection();
-
-            String sql
-                    = "SELECT car_id FROM cars WHERE available = 'Yes'";
-
+            String sql = "DELETE FROM rentals WHERE car_id=? AND customer_name=?";
             PreparedStatement pst = con.prepareStatement(sql);
-
-            ResultSet rs = pst.executeQuery();
-
-            while (rs.next()) {
-
-                CarItem car = new CarItem(
-                        rs.getInt("car_id"),
-                        rs.getString("make"),
-                        rs.getString("model"),
-                        rs.getString("color")
-                );
-
-                cmbVehicle.addItem(car);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            pst.setString(1, carID);
+            pst.setString(2, customerName);
+            pst.executeUpdate();
+            model.removeRow(selectedRow);
+            JOptionPane.showMessageDialog(null, "Record Deleted Successfully!", "Warning", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error deleting record!");
         }
     }
 
-    private void loadCustomerIDs() {
-
-//        cmbAvailable.removeAllItems();
-        try {
-
-            Connection con = DBConnection.getConnection();
-
-            String sql
-                    = "SELECT customer_id FROM customers";
-
-            PreparedStatement pst = con.prepareStatement(sql);
-
-            ResultSet rs = pst.executeQuery();
-
-            while (rs.next()) {
-
-//                cmbAvailable.addItem(
-//                        rs.getString("customer_id")
-//                );
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateFieldStatus() {
-
-        if (isEditing) {
+    private void handleEdit() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        String selectedCarID
-                = (String) cmbVehicle.getSelectedItem();
+        if (!isEditing) {
+            // Enter edit mode — populate fields from the selected row
+            isEditing = true;
+            String carIdStr = model.getValueAt(selectedRow, 0).toString();
+            // Select the matching CarItem in the dropdown
+            for (int i = 0; i < cmbVehicle.getItemCount(); i++) {
+                CarItem item = cmbVehicle.getItemAt(i);
+                if (String.valueOf(item.getCarId()).equals(carIdStr)) {
+                    cmbVehicle.setSelectedIndex(i);
+                    break;
+                }
+            }
+            cmbCustomer.setSelectedItem(model.getValueAt(selectedRow, 1).toString());
+           
+            txtRentFee.setText(model.getValueAt(selectedRow, 2).toString());
+            txtRentHour.setText(model.getValueAt(selectedRow, 3).toString());
+            txtDate.setText(model.getValueAt(selectedRow, 4).toString());
+            txtDueDate.setText(model.getValueAt(selectedRow, 5).toString());
+            btnAdd.setEnabled(false);
+            JOptionPane.showMessageDialog(null, "You can now edit the fields. Click Edit again to save.");
 
-        if (selectedCarID == null) {
-            txtRentFee.setText("");
+        } else {
+            // Save edited values
+            String rentHourInput = txtRentHour.getText().trim();
+            if (!rentHourInput.isEmpty() && !rentHourInput.equals("12")) {
+                JOptionPane.showMessageDialog(this, "Rental Hour must be 12 or empty.", "Update", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            try {
+                CarItem selectedCar = (CarItem) cmbVehicle.getSelectedItem();
+                if (selectedCar == null) return;
+                String carID = String.valueOf(selectedCar.getCarId());
+                String customerName = (String) cmbCustomer.getSelectedItem();
+                double fee = Double.parseDouble(txtRentFee.getText().trim());
+                LocalDate startDate = LocalDate.parse(txtDate.getText().trim(), formatter);
+                LocalDate dueDate = LocalDate.parse(txtDueDate.getText().trim(), formatter);
+
+                if (dueDate.isBefore(startDate)) {
+                    JOptionPane.showMessageDialog(this, "End date cannot be before start date.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                long daysBetween = ChronoUnit.DAYS.between(startDate, dueDate);
+                if (daysBetween == 0 && rentHourInput.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Same day rental requires Rental Hour = 12.", "Update", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                Connection con = DBConnection.getConnection();
+                String sql = "UPDATE rentals SET customer_name=?, rental_fee=?, rental_hour=?, "
+                        + "start_date=?, due_date=? WHERE car_id=?";
+                PreparedStatement pst = con.prepareStatement(sql);
+                pst.setString(1, customerName);
+                pst.setDouble(2, fee);
+                if (rentHourInput.isEmpty()) {
+                    pst.setNull(3, java.sql.Types.INTEGER);
+                } else {
+                    pst.setInt(3, Integer.parseInt(rentHourInput));
+                }
+                pst.setDate(4, java.sql.Date.valueOf(startDate));
+                pst.setDate(5, java.sql.Date.valueOf(dueDate));
+                pst.setString(6, carID);
+                pst.executeUpdate();
+
+                model.setValueAt(carID, selectedRow, 0);
+                model.setValueAt(customerName, selectedRow, 1);
+                model.setValueAt(txtRentFee.getText(), selectedRow, 2);
+                model.setValueAt(rentHourInput, selectedRow, 3);
+                model.setValueAt(txtDate.getText(), selectedRow, 4);
+                model.setValueAt(txtDueDate.getText(), selectedRow, 5);
+
+                JOptionPane.showMessageDialog(null, "Transaction Updated Successfully!");
+
+                isEditing = false;
+                btnAdd.setEnabled(true);
+                table.clearSelection();
+                clearFields();
+
+            } catch (DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(this, "Invalid date format! Please use MM/dd/yyyy.", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "Please enter a valid numeric fee.", "Update", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Error updating record!");
+            }
+        }
+    }
+
+    private void handleAdd() {
+        CarItem selectedCar = (CarItem) cmbVehicle.getSelectedItem();
+        if (selectedCar == null) {
+            JOptionPane.showMessageDialog(this, "Please select a vehicle.", "Add", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String carId = String.valueOf(selectedCar.getCarId());
+        String customerName = (String) cmbCustomer.getSelectedItem();
+        String rentFee = txtRentFee.getText().trim();
+        String rentHour = txtRentHour.getText().trim();
+        String startDateStr = txtDate.getText().trim();
+        String dueDateStr = txtDueDate.getText().trim();
+
+       
+        if (customerName == null || customerName.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please select a customer.", "Add", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (startDateStr.isEmpty() || dueDateStr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Date and End Date are required.", "Add", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+      
+        if (!rentHour.isEmpty() && !rentHour.equals("12")) {
+            JOptionPane.showMessageDialog(this, "Rental Hour must be 12 or leave it empty.", "Add", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         try {
+            double fee = Double.parseDouble(rentFee);
+            LocalDate startDate = LocalDate.parse(startDateStr, formatter);
+            LocalDate dueDate = LocalDate.parse(dueDateStr, formatter);
 
-            Connection con = DBConnection.getConnection();
+            if (dueDate.isBefore(startDate)) {
+                JOptionPane.showMessageDialog(this, "End date cannot be before start date.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-            String sql
-                    = "SELECT rental_price, available "
-                    + "FROM cars "
-                    + "WHERE car_id = ?";
+           
+            long daysBetween = ChronoUnit.DAYS.between(startDate, dueDate);
+            if (daysBetween == 0 && rentHour.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Same day rental requires Rental Hour = 12.", "Add", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-            PreparedStatement pst
-                    = con.prepareStatement(sql);
+            if (!isCarAvailableForDates(carId, startDate, dueDate)) {
+                JOptionPane.showMessageDialog(this,
+                        "This car is already rented during the selected dates.",
+                        "Unavailable", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-            pst.setString(1, selectedCarID);
+            String sql = "INSERT INTO rentals (car_id, customer_name, rental_fee, rental_hour, start_date, end_date, customer_id) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-            ResultSet rs = pst.executeQuery();
+            try (Connection con = DBConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+                pst.setString(1, carId);
+                pst.setString(2, customerName);
+                pst.setDouble(3, fee);
+                if (rentHour.isEmpty()) {
+                    pst.setNull(4, java.sql.Types.INTEGER);
+                } else {
+                    pst.setInt(4, Integer.parseInt(rentHour));
+                }
+                pst.setDate(5, java.sql.Date.valueOf(startDate));
+                pst.setDate(6, java.sql.Date.valueOf(dueDate));
+                pst.setString(7, customerName);
 
-            if (rs.next()) {
+//                // Compute total price using availableManager logic
+//                String total = availableManager.computeTotal(rentFee, rentHour,
+//                        startDate.format(formatter), dueDate.format(formatter));
+//                pst.setDouble(8, Double.parseDouble(total.equals("N/A") ? "0" : total));
 
-                txtRentFee.setText(
-                        rs.getString("rental_price")
-                );
-
-                String availability
-                        = rs.getString("available");
-
-                boolean available
-                        = availability.equalsIgnoreCase("Yes");
-
-//                cmbVehicle.setEnabled(available);
-//                cmbCustomer.setEnabled(available);
-                txtRentFee.setEnabled(available);
-                txtRentHour.setEnabled(available);
-                txtDate.setEnabled(available);
-                txtDueDate.setEnabled(available);
-                btnAdd.setEnabled(available);
-
-                if (!available) {
-                    JOptionPane.showMessageDialog(
-                            this,
-                            "This car is currently unavailable."
-                    );
+                int rowsInserted = pst.executeUpdate();
+                if (rowsInserted > 0) {
+                    model.addRow(new Object[]{
+                        carId,
+                        customerName,
+                        rentFee,
+                        rentHour,
+                        startDate.format(formatter),
+                        dueDate.format(formatter)
+                    });
+                    JOptionPane.showMessageDialog(null, "Rental Saved Successfully!");
+                    clearFields();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Database rejected insertion. Check constraints.");
                 }
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (DateTimeParseException ex) {
+            JOptionPane.showMessageDialog(this, "Invalid date format! Please use MM/dd/yyyy.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Please enter a valid numeric fee.", "Add", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database Error: " + ex.getMessage());
         }
     }
 
-    private void updateCustomerInfo() {
-
-//        String selectedCustomerID
-//                = (String) cmbAvailable.getSelectedItem();
-//        if (selectedCustomerID == null) {
-//            return;
-//        }
+    
+    private boolean isCarAvailableForDates(String carId, LocalDate startDate, LocalDate dueDate) {
         try {
-
             Connection con = DBConnection.getConnection();
-
-            String sql
-                    = "SELECT customer_name "
-                    + "FROM customers "
-                    + "WHERE customer_id = ?";
-
-            PreparedStatement pst
-                    = con.prepareStatement(sql);
-
-//            pst.setString(1, selectedCustomerID);
-            ResultSet rs = pst.executeQuery();
-
-//            if (rs.next()) {
-//
-//                txtCustomer.setText(
-//                        rs.getString("customer_name")
-//                );
-//            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void MaintenanceRecord() {
-        model.setRowCount(0);
-
-        for (availableManager record : rentalList) {
-            model.addRow(new Object[]{
-                record.getCarID(),
-                record.getCustomerID(),
-                record.getCustomerName(),
-                record.getRentFee(),
-                record.getRentHour(),
-                record.getStartDate(),
-                record.getDueDate()
-            });
-        }
-    }
-
-    private void loadCars() {
-
-        cmbVehicle.removeAllItems();
-
-        try {
-
-            Connection con = DBConnection.getConnection();
-
-            String sql
-                    = "SELECT car_id, color, make, model "
-                    + "FROM cars "
-                    + "WHERE available = 'Yes'";
-
+            String sql = "SELECT COUNT(*) FROM rentals WHERE car_id = ? "
+                    + "AND start_date <= ? AND end_date >= ?";
             PreparedStatement pst = con.prepareStatement(sql);
-
+            pst.setString(1, carId);
+            pst.setDate(2, java.sql.Date.valueOf(dueDate));
+            pst.setDate(3, java.sql.Date.valueOf(startDate));
             ResultSet rs = pst.executeQuery();
-
-            while (rs.next()) {
-
-                CarItem car = new CarItem(
-                        rs.getInt("car_id"),
-                        rs.getString("make"),
-                        rs.getString("model"),
-                        rs.getString("color")
-                );
-
-                cmbVehicle.addItem(car);
+            if (rs.next()) {
+                return rs.getInt(1) == 0;
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return true;
     }
 }

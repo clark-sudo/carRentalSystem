@@ -50,7 +50,7 @@ public class homePage extends JFrame implements ActionListener{
         btnCustomer.setBounds(50, 200, 200, 40);
         add(btnCustomer);
         
-        btnAvailable = new JButton("Available");
+        btnAvailable = new JButton("Car Rental");
         btnAvailable.setFont(new Font("Arial", Font.BOLD, 15));
         btnAvailable.setBackground(new Color(66, 133, 244));
         btnAvailable.setForeground(Color.white);

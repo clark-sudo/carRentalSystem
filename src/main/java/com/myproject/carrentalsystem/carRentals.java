@@ -347,8 +347,8 @@ public class carRentals extends JPanel implements ActionListener {
                 Connection con = DBConnection.getConnection();
 
                 String sql
-                        = "INSERT INTO cars(color, make, model, rental_price, available) "
-                        + "VALUES (?, ?, ?, ?, 'Yes')";
+                        = "INSERT INTO cars(color, make, model, rental_price, status) "
+                        + "VALUES (?, ?, ?, ?, 'Available')";
 
                 PreparedStatement pst = con.prepareStatement(sql);
 
@@ -412,7 +412,7 @@ public class carRentals extends JPanel implements ActionListener {
                     rs.getString("make"),
                     rs.getString("model"),
                     rs.getDouble("rental_price"),
-                    rs.getString("available")
+                    rs.getString("status")
                 });
             }
 
