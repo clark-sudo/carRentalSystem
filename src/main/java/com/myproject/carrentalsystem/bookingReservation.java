@@ -236,98 +236,73 @@ public class bookingReservation extends JPanel implements ActionListener{
                 JOptionPane.showMessageDialog(null, "Please select a row to remove.", "Delete", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnEdit) {
-            String licensedId = txtLicensedID.getText();
-            String customerName = txtCustomer.getText();
-            String number = txtNumber.getText();
-            String address = txaAddress.getText();
-            String email = txtEmail.getText();
             int selectedRow = table.getSelectedRow();
-            if (selectedRow != -1) {
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-                if (!isEditing) {
-                    isEditing = true;
-                    
-                    txtLicensedID.setText(
-                            model.getValueAt(selectedRow, 0).toString());
-                    txtCustomer.setText(
-                            model.getValueAt(selectedRow, 1).toString());
-                    txtNumber.setText(
-                            model.getValueAt(selectedRow, 2).toString());
-                    txaAddress.setText(
-                            model.getValueAt(selectedRow, 3).toString());
-                    txtEmail.setText(
-                            model.getValueAt(selectedRow, 4).toString());
-                    btnAdd.setEnabled(false);
-                    JOptionPane.showMessageDialog(null, "You can now edit the fields. Click Edit again to save.");
-                    } else {
+            if (!isEditing) {
+                isEditing = true;
 
-            if (!(licensedId.isEmpty() || customerName.isEmpty() || number.isEmpty() || address.isEmpty())) {
-                
-                model.setValueAt(
-                        txtLicensedID.getText(), selectedRow, 0 );
-                model.setValueAt(
-                        txtCustomer.getText(), selectedRow, 1 );
-                model.setValueAt(
-                        txtNumber.getText(), selectedRow, 2 );
-                model.setValueAt (
-                        txaAddress.getText(), selectedRow, 3 );
-                model.setValueAt(
-                        txtEmail.getText(), selectedRow, 4 );
-                JOptionPane.showMessageDialog(null, "Customer Updated Successfully!");
+                txtLicensedID.setText(model.getValueAt(selectedRow, 0).toString());
+                txtCustomer.setText(model.getValueAt(selectedRow, 1).toString());
+                txtNumber.setText(model.getValueAt(selectedRow, 2).toString());
+                txaAddress.setText(model.getValueAt(selectedRow, 3).toString());
+                txtEmail.setText(model.getValueAt(selectedRow, 4).toString());
+
+                btnAdd.setEnabled(false);
+                JOptionPane.showMessageDialog(null, "You can now edit the fields. Click Edit again to save.");
+
+            } else {
+                // Read current field values NOW (after user edited them)
+                String licensedId = txtLicensedID.getText().trim();
+                String customerName = txtCustomer.getText().trim();
+                String number = txtNumber.getText().trim();
+                String address = txaAddress.getText().trim();
+                String email = txtEmail.getText().trim();
+
+                if (licensedId.isEmpty() || customerName.isEmpty() || number.isEmpty() || address.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "All fields must be filled.", "Update", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
                 try {
-
-                    String customerID
-                            = model.getValueAt(selectedRow, 0).toString();
-
                     Connection con = DBConnection.getConnection();
-
-                    String sql
-                            = "UPDATE customers "
-                            + "SET customer_name=?, address=?, mobile_number=?, email=? "
+                    String sql = "UPDATE customers "
+                            + "SET customer_id=?, customer_name=?, address=?, mobile_number=?, email=? "
                             + "WHERE customer_id=?";
-
-                    PreparedStatement pst
-                            = con.prepareStatement(sql);
-
-                    pst.setString(1, txtCustomer.getText());
-                    pst.setString(2, txaAddress.getText());
-                    pst.setString(3, txtNumber.getText());
-                    pst.setString(4, txtEmail.getText());
-                    pst.setString(5, customerID);
-
+                    PreparedStatement pst = con.prepareStatement(sql);
+                    pst.setString(1, licensedId);
+                    pst.setString(2, customerName);
+                    pst.setString(3, address);
+                    pst.setString(4, number);
+                    pst.setString(5, email);
+                    // Use the original ID from the table row as the WHERE key
+                    pst.setString(6, model.getValueAt(selectedRow, 0).toString());
                     pst.executeUpdate();
 
-                    model.setValueAt(
-                            txtCustomer.getText(), selectedRow, 1);
+                    model.setValueAt(licensedId, selectedRow, 0);
+                    model.setValueAt(customerName, selectedRow, 1);
+                    model.setValueAt(number, selectedRow, 2);
+                    model.setValueAt(address, selectedRow, 3);
+                    model.setValueAt(email, selectedRow, 4);
 
-                    model.setValueAt(
-                            txtNumber.getText(), selectedRow, 2);
+                    JOptionPane.showMessageDialog(null, "Customer Updated Successfully!");
 
-                    model.setValueAt(
-                            txaAddress.getText(), selectedRow, 3);
-
-                    model.setValueAt(
-                            txtEmail.getText(), selectedRow, 4);
-
-                    JOptionPane.showMessageDialog(
-                            null,
-                            "Customer Updated Successfully!");
+                    isEditing = false;
+                    btnAdd.setEnabled(true);
+                    table.clearSelection();
+                    txtLicensedID.setText("");
+                    txtCustomer.setText("");
+                    txaAddress.setText("");
+                    txtNumber.setText("");
+                    txtEmail.setText("");
 
                 } catch (Exception ex) {
-
                     ex.printStackTrace();
-
-                    JOptionPane.showMessageDialog(
-                            null,
-                            "Error updating customer!");
+                    JOptionPane.showMessageDialog(null, "Error updating customer!");
                 }
-                } else {
-                JOptionPane.showMessageDialog(null, "All fields must be Fullfilled.", "Update", JOptionPane.ERROR_MESSAGE);
-            }
-            }
-            } else {
-                JOptionPane.showMessageDialog(null, "Please select a row to edit.", "Update", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnAdd) {
 //            String customerId = txtCustomerID.getText();

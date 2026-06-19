@@ -267,9 +267,9 @@ public class rentalInvoices extends JPanel implements ActionListener {
     /**
      * Called whenever the vehicle combo selection changes.
      * Updates the Available text field and auto-fills the rental fee.
-     * "Yes"          → car.available is "Available"
-     * "No"           → car.available is "Rented"
-     * "Maintenance"  → car.available is "Maintenance"
+     * "Available"   → Yes
+     * "Rented"      → No
+     * "Maintenance" → Maintenance (still allows booking outside maintenance dates)
      */
     private void onVehicleSelected() {
         if (isEditing) return;
@@ -281,7 +281,6 @@ public class rentalInvoices extends JPanel implements ActionListener {
             return;
         }
 
-        // Map DB status to display label
         String status = selected.getAvailable();
         if (status == null) status = "";
 
@@ -300,22 +299,26 @@ public class rentalInvoices extends JPanel implements ActionListener {
                 break;
         }
 
-        // Auto-fill rental fee from the vehicle's registered price (not editable)
+        // Auto-fill rental fee
         txtRentFee.setText(String.format("%.2f", selected.getRentalPrice()));
 
-        // Only allow adding if the car is Available
-        boolean canRent = "Available".equalsIgnoreCase(status.trim());
+        // Block only "Rented" cars — Maintenance cars can still be booked
+        // as long as the rental dates don't overlap with the maintenance window
+        boolean canRent = !"Rented".equalsIgnoreCase(status.trim());
         btnAdd.setEnabled(canRent);
         txtRentHour.setEnabled(canRent);
         txtDate.setEnabled(canRent);
         txtDueDate.setEnabled(canRent);
         cmbCustomer.setEnabled(canRent);
 
-        if (!canRent) {
-            String reason = "No".equals(txtAvailable.getText())
-                    ? "This car is currently rented."
-                    : "This car is currently under maintenance.";
-            JOptionPane.showMessageDialog(this, reason, "Unavailable", JOptionPane.WARNING_MESSAGE);
+        if ("Rented".equalsIgnoreCase(status.trim())) {
+            JOptionPane.showMessageDialog(this,
+                    "This car is currently rented and cannot be booked.",
+                    "Unavailable", JOptionPane.WARNING_MESSAGE);
+        } else if ("Maintenance".equalsIgnoreCase(status.trim())) {
+            JOptionPane.showMessageDialog(this,
+                    "This car is under maintenance. You can still book it for dates outside the maintenance period.",
+                    "Under Maintenance", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -323,17 +326,27 @@ public class rentalInvoices extends JPanel implements ActionListener {
         model.setRowCount(0);
         try {
             Connection con = DBConnection.getConnection();
-            String sql = "SELECT * FROM rentals";
+            String sql = "SELECT rentals.car_id, cars.color, cars.make, cars.model, customer_name,rental_fee,rental_hour,start_date,end_date FROM cars\n" +
+"INNER JOIN rentals ON rentals.car_id = cars.car_id;";
             PreparedStatement pst = con.prepareStatement(sql);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {
+                String carId = rs.getString("car_id");
+                String color = rs.getString("color");
+                String make = rs.getString("make");
+                String modelName = rs.getString("model");
+                // Display as "Color - Make - Model" to match the dropdown label
+                String vehicleLabel = (color != null && make != null && modelName != null)
+                        ? color + " - " + make + " - " + modelName
+                        : carId;
                 model.addRow(new Object[]{
-                    rs.getString("car_id"),
+                    vehicleLabel,
                     rs.getString("customer_name"),
                     rs.getDouble("rental_fee"),
                     rs.getString("rental_hour"),
                     rs.getString("start_date"),
                     rs.getString("end_date")
+                        
                 });
             }
         } catch (Exception e) {
@@ -382,8 +395,23 @@ public class rentalInvoices extends JPanel implements ActionListener {
             return;
         }
         try {
-            String carID = model.getValueAt(selectedRow, 0).toString();
+            // Column 0 is the vehicle label — find the matching CarItem to get the real car_id
+            String vehicleLabel = model.getValueAt(selectedRow, 0).toString();
             String customerName = model.getValueAt(selectedRow, 1).toString();
+
+            // Resolve car_id from the dropdown by matching label
+            String carID = null;
+            for (int i = 0; i < cmbVehicle.getItemCount(); i++) {
+                if (cmbVehicle.getItemAt(i).toString().equals(vehicleLabel)) {
+                    carID = String.valueOf(cmbVehicle.getItemAt(i).getCarId());
+                    break;
+                }
+            }
+            if (carID == null) {
+                JOptionPane.showMessageDialog(null, "Could not resolve vehicle. Please try again.");
+                return;
+            }
+
             Connection con = DBConnection.getConnection();
             String sql = "DELETE FROM rentals WHERE car_id=? AND customer_name=?";
             PreparedStatement pst = con.prepareStatement(sql);
@@ -408,40 +436,70 @@ public class rentalInvoices extends JPanel implements ActionListener {
         if (!isEditing) {
             // Enter edit mode — populate fields from the selected row
             isEditing = true;
-            String carIdStr = model.getValueAt(selectedRow, 0).toString();
-            // Select the matching CarItem in the dropdown
+
+            // Table column 0 is "Color - Make - Model" label — match by label text
+            String vehicleLabel = model.getValueAt(selectedRow, 0).toString();
             for (int i = 0; i < cmbVehicle.getItemCount(); i++) {
-                CarItem item = cmbVehicle.getItemAt(i);
-                if (String.valueOf(item.getCarId()).equals(carIdStr)) {
+                if (cmbVehicle.getItemAt(i).toString().equals(vehicleLabel)) {
                     cmbVehicle.setSelectedIndex(i);
                     break;
                 }
             }
+
+            // Temporarily suppress onVehicleSelected so it doesn't override the saved fee
+            isEditing = true; // keep true so onVehicleSelected returns early
+
             cmbCustomer.setSelectedItem(model.getValueAt(selectedRow, 1).toString());
-           
             txtRentFee.setText(model.getValueAt(selectedRow, 2).toString());
-            txtRentHour.setText(model.getValueAt(selectedRow, 3).toString());
+            txtRentHour.setText(model.getValueAt(selectedRow, 3) != null
+                    ? model.getValueAt(selectedRow, 3).toString() : "");
             txtDate.setText(model.getValueAt(selectedRow, 4).toString());
             txtDueDate.setText(model.getValueAt(selectedRow, 5).toString());
+
+            // Also show availability for context
+            CarItem selected = (CarItem) cmbVehicle.getSelectedItem();
+            if (selected != null) {
+                String status = selected.getAvailable();
+                if (status == null) status = "";
+                switch (status.trim()) {
+                    case "Available": txtAvailable.setText("Yes"); break;
+                    case "Rented":    txtAvailable.setText("No");  break;
+                    case "Maintenance": txtAvailable.setText("Maintenance"); break;
+                    default: txtAvailable.setText(status); break;
+                }
+            }
+
             btnAdd.setEnabled(false);
             JOptionPane.showMessageDialog(null, "You can now edit the fields. Click Edit again to save.");
 
         } else {
-            // Save edited values
+            // Save edited values — read fields NOW after user has edited them
             String rentHourInput = txtRentHour.getText().trim();
             if (!rentHourInput.isEmpty() && !rentHourInput.equals("12")) {
                 JOptionPane.showMessageDialog(this, "Rental Hour must be 12 or empty.", "Update", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
+            CarItem selectedCar = (CarItem) cmbVehicle.getSelectedItem();
+            if (selectedCar == null) return;
+
+            String carID = String.valueOf(selectedCar.getCarId());
+            String vehicleLabel = selectedCar.toString();
+            String customerName = (String) cmbCustomer.getSelectedItem();
+            String rentFeeStr = txtRentFee.getText().trim();
+            String startDateStr = txtDate.getText().trim();
+            String dueDateStr = txtDueDate.getText().trim();
+
+            if (customerName == null || customerName.isEmpty()
+                    || startDateStr.isEmpty() || dueDateStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "All fields must be filled.", "Update", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             try {
-                CarItem selectedCar = (CarItem) cmbVehicle.getSelectedItem();
-                if (selectedCar == null) return;
-                String carID = String.valueOf(selectedCar.getCarId());
-                String customerName = (String) cmbCustomer.getSelectedItem();
-                double fee = Double.parseDouble(txtRentFee.getText().trim());
-                LocalDate startDate = LocalDate.parse(txtDate.getText().trim(), formatter);
-                LocalDate dueDate = LocalDate.parse(txtDueDate.getText().trim(), formatter);
+                double fee = Double.parseDouble(rentFeeStr);
+                LocalDate startDate = LocalDate.parse(startDateStr, formatter);
+                LocalDate dueDate = LocalDate.parse(dueDateStr, formatter);
 
                 if (dueDate.isBefore(startDate)) {
                     JOptionPane.showMessageDialog(this, "End date cannot be before start date.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -454,28 +512,48 @@ public class rentalInvoices extends JPanel implements ActionListener {
                     return;
                 }
 
-                Connection con = DBConnection.getConnection();
-                String sql = "UPDATE rentals SET customer_name=?, rental_fee=?, rental_hour=?, "
-                        + "start_date=?, due_date=? WHERE car_id=?";
-                PreparedStatement pst = con.prepareStatement(sql);
-                pst.setString(1, customerName);
-                pst.setDouble(2, fee);
-                if (rentHourInput.isEmpty()) {
-                    pst.setNull(3, java.sql.Types.INTEGER);
-                } else {
-                    pst.setInt(3, Integer.parseInt(rentHourInput));
+                // Check maintenance window conflict
+                String maintenanceConflict = getMaintenanceConflict(carID, startDate, dueDate);
+                if (maintenanceConflict != null) {
+                    JOptionPane.showMessageDialog(this,
+                            "This car is under maintenance from " + maintenanceConflict + ".\n"
+                            + "Please choose dates outside the maintenance period.",
+                            "Maintenance Conflict", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
-                pst.setDate(4, java.sql.Date.valueOf(startDate));
-                pst.setDate(5, java.sql.Date.valueOf(dueDate));
-                pst.setString(6, carID);
+
+                // Use the original car_id from the row for the WHERE clause
+                // (in case vehicle was changed, we update by original car_id)
+                String originalVehicleLabel = model.getValueAt(selectedRow, 0).toString();
+                String originalCustomerName = model.getValueAt(selectedRow, 1).toString();
+
+                Connection con = DBConnection.getConnection();
+                String sql = "UPDATE rentals SET car_id=?, customer_name=?, rental_fee=?, "
+                        + "rental_hour=?, start_date=?, end_date=? "
+                        + "WHERE customer_name=? AND start_date=?";
+                PreparedStatement pst = con.prepareStatement(sql);
+                pst.setString(1, carID);
+                pst.setString(2, customerName);
+                pst.setDouble(3, fee);
+                if (rentHourInput.isEmpty()) {
+                    pst.setNull(4, java.sql.Types.INTEGER);
+                } else {
+                    pst.setInt(4, Integer.parseInt(rentHourInput));
+                }
+                pst.setDate(5, java.sql.Date.valueOf(startDate));
+                pst.setDate(6, java.sql.Date.valueOf(dueDate));
+                // WHERE params — original values to identify the record
+                pst.setString(7, originalCustomerName);
+                pst.setString(8, model.getValueAt(selectedRow, 4).toString());
                 pst.executeUpdate();
 
-                model.setValueAt(carID, selectedRow, 0);
+                // Update table with display-friendly values
+                model.setValueAt(vehicleLabel, selectedRow, 0);
                 model.setValueAt(customerName, selectedRow, 1);
-                model.setValueAt(txtRentFee.getText(), selectedRow, 2);
+                model.setValueAt(rentFeeStr, selectedRow, 2);
                 model.setValueAt(rentHourInput, selectedRow, 3);
-                model.setValueAt(txtDate.getText(), selectedRow, 4);
-                model.setValueAt(txtDueDate.getText(), selectedRow, 5);
+                model.setValueAt(startDate.format(formatter), selectedRow, 4);
+                model.setValueAt(dueDate.format(formatter), selectedRow, 5);
 
                 JOptionPane.showMessageDialog(null, "Transaction Updated Successfully!");
 
@@ -490,7 +568,7 @@ public class rentalInvoices extends JPanel implements ActionListener {
                 JOptionPane.showMessageDialog(null, "Please enter a valid numeric fee.", "Update", JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(null, "Error updating record!");
+                JOptionPane.showMessageDialog(null, "Error updating record: " + ex.getMessage());
             }
         }
     }
@@ -544,8 +622,18 @@ public class rentalInvoices extends JPanel implements ActionListener {
 
             if (!isCarAvailableForDates(carId, startDate, dueDate)) {
                 JOptionPane.showMessageDialog(this,
-                        "This car is already rented during the selected dates.",
+                        "This car is already rented during the selected date or its under maintenance!!.",
                         "Unavailable", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Check maintenance window — even Maintenance cars can be rented outside their maintenance period
+            String maintenanceConflict = getMaintenanceConflict(carId, startDate, dueDate);
+            if (maintenanceConflict != null) {
+                JOptionPane.showMessageDialog(this,
+                        "This car is under maintenance from " + maintenanceConflict + ".\n"
+                        + "Please choose dates outside the maintenance period.",
+                        "Maintenance Conflict", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -597,7 +685,10 @@ public class rentalInvoices extends JPanel implements ActionListener {
         }
     }
 
-    
+    /**
+     * Checks the rentals table to see if the car has any overlapping booking
+     * for the given date range (start <= existingEnd AND end >= existingStart).
+     */
     private boolean isCarAvailableForDates(String carId, LocalDate startDate, LocalDate dueDate) {
         try {
             Connection con = DBConnection.getConnection();
@@ -615,5 +706,32 @@ public class rentalInvoices extends JPanel implements ActionListener {
             e.printStackTrace();
         }
         return true;
+    }
+
+    /**
+     * Checks if the car has a maintenance record that overlaps the requested rental dates.
+     * Returns the conflicting maintenance period as a string, or null if no conflict.
+     * Example: "06/01/2025 - 06/03/2025"
+     */
+    private String getMaintenanceConflict(String carId, LocalDate startDate, LocalDate dueDate) {
+        try {
+            Connection con = DBConnection.getConnection();
+            // Overlap condition: maintenance starts before rental ends AND maintenance ends after rental starts
+            String sql = "SELECT date, end_date FROM vehicle_maintenance "
+                    + "WHERE car_id = ? AND date <= ? AND end_date >= ? LIMIT 1";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setString(1, carId);
+            pst.setDate(2, java.sql.Date.valueOf(dueDate));
+            pst.setDate(3, java.sql.Date.valueOf(startDate));
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                String mStart = rs.getString("date");
+                String mEnd = rs.getString("end_date");
+                return mStart + " to " + mEnd;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null; // no conflict
     }
 }

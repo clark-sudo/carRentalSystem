@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 19, 2026 at 05:59 AM
+-- Generation Time: Jun 19, 2026 at 04:32 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -42,8 +42,8 @@ CREATE TABLE `cars` (
 
 INSERT INTO `cars` (`car_id`, `color`, `make`, `model`, `rental_price`, `status`) VALUES
 (1, 'Blue', 'Toyota', 'Vios', 1000.00, 'Available'),
-(2, 'Red', 'RedBull', 'Formula 1', 1000.00, 'Available'),
-(3, 'White', 'Van', 'UrVan', 100.00, 'Maintenance');
+(2, 'Red', 'RedBull', 'Formula 1', 1000.00, 'Maintenance'),
+(3, 'Dilaw', 'Vanaa', 'UrVan', 100.00, 'Maintenance');
 
 -- --------------------------------------------------------
 
@@ -64,8 +64,9 @@ CREATE TABLE `customers` (
 --
 
 INSERT INTO `customers` (`customer_id`, `customer_name`, `address`, `mobile_number`, `email`) VALUES
-(43, 'k', '349', '0540', 'k'),
-(100, 'Khyran', 'Langkiwa', '0969', 'k@gmail.com');
+(43, 'khyyy', '349', '0540', 'k'),
+(100, 'Khyran', 'Langkiwa', '0969', 'k@gmail.com'),
+(65789878, 'ClarkSon', 'Langkiwa', '08796780340', 'k@vbgnhgmh');
 
 -- --------------------------------------------------------
 
@@ -78,7 +79,7 @@ CREATE TABLE `rentals` (
   `car_id` varchar(100) NOT NULL,
   `customer_name` varchar(100) NOT NULL,
   `rental_fee` varchar(250) NOT NULL,
-  `rental_hour` double NOT NULL,
+  `rental_hour` int(11) DEFAULT NULL,
   `start_date` varchar(50) NOT NULL,
   `end_date` varchar(50) NOT NULL,
   `customer_id` varchar(100) NOT NULL
@@ -89,10 +90,14 @@ CREATE TABLE `rentals` (
 --
 
 INSERT INTO `rentals` (`available_id`, `car_id`, `customer_name`, `rental_fee`, `rental_hour`, `start_date`, `end_date`, `customer_id`) VALUES
-(1, '2', 'k', '100.0', 12, '2026-06-20', '2026-06-21', 'k'),
+(1, '2', 'IANN', '100.0', NULL, '2026-06-22', '2026-06-23', 'k'),
 (2, '1', 'k', '1000.0', 12, '2026-06-10', '2026-06-10', 'k'),
 (3, '2', 'Khyran', '1000.0', 12, '2026-06-11', '2026-06-11', 'Khyran'),
-(4, '1', 'k', '1000.0', 12, '2026-06-15', '2026-06-16', 'k');
+(4, '1', 'IANN', '1000.0', 12, '2026-06-15', '2026-06-15', 'k'),
+(5, '4', 'IAN', '1000.0', 12, '2026-06-20', '2026-06-21', 'IAN'),
+(6, '2', 'IANN', '1000.0', 12, '2026-06-24', '2026-06-25', 'IANN'),
+(7, '2', 'IANN', '1000.0', 12, '2026-06-30', '2026-06-30', 'IANN'),
+(8, '1', 'ClarkSon', '1000.0', NULL, '2026-06-25', '2026-06-30', 'IANN');
 
 -- --------------------------------------------------------
 
@@ -133,7 +138,8 @@ CREATE TABLE `vehicle_maintenance` (
 --
 
 INSERT INTO `vehicle_maintenance` (`repair_id`, `car_id`, `maintenance_type`, `description`, `cost`, `date`, `end_date`) VALUES
-(1, '3', 'Oil Change', 'karag na', 1000, '2026-06-12', '2026-06-13');
+(1, '3', 'Oil Change', 'karag na', 1000, '2026-06-12', '2026-06-13'),
+(2, '2', 'Oil Change', 'sira na po', 10000, '2026-06-20', '2026-06-21');
 
 --
 -- Indexes for dumped tables
@@ -171,25 +177,25 @@ ALTER TABLE `vehicle_maintenance`
 -- AUTO_INCREMENT for table `cars`
 --
 ALTER TABLE `cars`
-  MODIFY `car_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `car_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `customer_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+  MODIFY `customer_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65789879;
 
 --
 -- AUTO_INCREMENT for table `rentals`
 --
 ALTER TABLE `rentals`
-  MODIFY `available_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `available_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `vehicle_maintenance`
 --
 ALTER TABLE `vehicle_maintenance`
-  MODIFY `repair_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `repair_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

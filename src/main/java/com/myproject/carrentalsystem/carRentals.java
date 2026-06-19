@@ -28,7 +28,7 @@ public class carRentals extends JPanel implements ActionListener {
     private JTable table;
     private DefaultTableModel model;
     private static final String[] tblColumns = {
-        "Car ID",
+        "Car ID",       // hidden column 0 — used for edit/delete, not visible in UI
         "Car Color",
         "Car Make",
         "Car Model",
@@ -118,6 +118,12 @@ public class carRentals extends JPanel implements ActionListener {
         model = new DefaultTableModel(tblColumns, 0);
         table = new JTable(model);
         loadTableData();
+
+        // Hide the Car ID column from the UI — it stays in the model for edit/delete
+        table.getColumnModel().getColumn(0).setMinWidth(0);
+        table.getColumnModel().getColumn(0).setMaxWidth(0);
+        table.getColumnModel().getColumn(0).setWidth(0);
+        table.getColumnModel().getColumn(0).setResizable(false);
         scrollPane = new JScrollPane(table);
         scrollPane.setBackground(new Color(177, 218, 220));
         scrollPane.setBounds(800, 130, 500, 500);
@@ -250,16 +256,16 @@ public class carRentals extends JPanel implements ActionListener {
                 isEditing = true;
 
                 txtColor.setText(
-                        model.getValueAt(selectedRow, 1).toString());
+                        model.getValueAt(selectedRow, 1).toString());  // col 1 = color
 
                 txtMake.setText(
-                        model.getValueAt(selectedRow, 2).toString());
+                        model.getValueAt(selectedRow, 2).toString());  // col 2 = make
 
                 txtModel.setText(
-                        model.getValueAt(selectedRow, 3).toString());
+                        model.getValueAt(selectedRow, 3).toString());  // col 3 = model
 
                 txtPrice.setText(
-                        model.getValueAt(selectedRow, 4).toString());
+                        model.getValueAt(selectedRow, 4).toString());  // col 4 = price
 
                 btnAdd.setEnabled(false);
 
@@ -272,6 +278,7 @@ public class carRentals extends JPanel implements ActionListener {
 
                 try {
 
+                    // col 0 is always car_id — hidden from UI but available in model
                     String carID
                             = model.getValueAt(selectedRow, 0).toString();
 
@@ -407,7 +414,7 @@ public class carRentals extends JPanel implements ActionListener {
             while (rs.next()) {
 
                 model.addRow(new Object[]{
-                    rs.getInt("car_id"),
+                    rs.getInt("car_id"),    // hidden col 0
                     rs.getString("color"),
                     rs.getString("make"),
                     rs.getString("model"),
